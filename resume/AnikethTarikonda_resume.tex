@@ -1,0 +1,174 @@
+%-------------------------
+% Resume in Latex
+% Author : Aniketh Tarikonda
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generated PDF is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{#1 \vspace{-2pt}}
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      {#3} & {#4} \\
+    \end{tabular*}\vspace{-6pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      #1 & #2 \\
+    \end{tabular*}\vspace{-6pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+    \end{tabular*}\vspace{-6pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-3pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.2in]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-4pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape Aniketh Tarikonda} \\ \vspace{2pt}
+    \href{mailto:aniketh8@illinois.edu}{aniketh8@illinois.edu} $|$ 
+    \href{https://anikethta.com}{anikethta.com} $|$
+    \href{https://github.com/anikethta}{github.com/anikethta}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {University of Illinois, Urbana-Champaign}{Champaign, IL}
+      {Bachelor of Science in Computer Engineering, Minor in Physics}{Expected Dec. 2027}
+    \resumeItemListStart
+        \resumeItem{Honors: James Scholar, Dean's List (Fall 2024–Present), IEEE-HKN Honor Society}
+        \resumeItem{Cumulative GPA: 3.97 / 4.00}
+        \resumeItem{Relevant Coursework: Applied Parallel Programming (GPUs \& CUDA), Digital Systems Laboratory (FPGAs), Digital Signal Processing, Analog Signal Processing, Data Structures}
+        \resumeItem{Planned Coursework: Computer Organization and Design, Intro to VLSI System Design}
+    \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+
+  \resumeSubheading
+  {Eco Illini Supermileage}{Champaign, IL}
+  {Electrical Lead}{May 2025 -- Present}
+  \resumeItemListStart
+    \resumeItem{Lead an interdisciplinary team of 20+ engineers to design and integrate electrical systems for new generations of electric vehicles.}
+    \resumeItem{Mentor new members in automotive systems, embedded systems, and electrical design best practices.}
+  \resumeItemListEnd
+
+  % Sub-role under same company
+  \resumeSubSubheading
+    {Electrical/Firmware Engineer}{Aug. 2024 -- May 2025}
+    \resumeItemListStart
+      \resumeItem{Designed schematics and PCBs for 3+ custom boards, including a power distribution unit and battery management system, following automotive standards (e.g., J1939-17).}
+      \resumeItem{Programmed STM32-based microcontrollers with firmware supporting SPI, UART, and CAN communication protocols.}
+      \resumeItem{Validated hardware on 2+ boards, achieving reliable data transmission rates exceeding 99\%.}
+    \resumeItemListEnd
+
+    \resumeSubheading
+      {ResearchBase Inc.}{Pleasanton, CA}
+      {Software Engineering Intern}{July 2025 -- Aug. 2025}
+      \resumeItemListStart
+        \resumeItem{Built a ResearchCopilot prototype with a real-time conversational pipeline integrating automatic speech recognition (ASR) and analytics to surface insights dynamically.}
+        \resumeItem{Improved document parsing accuracy by integrating LandingAI Agentic Document Extraction (ADE) APIs for structured data extraction.}
+        \resumeItem{Developed a text-to-image generation feature using ChatGPT image APIs, converting natural language prompts into visuals.}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Alameda County IT Department}{Oakland, CA}
+      {IT Intern}{June 2022 -- Aug. 2022}
+      \resumeItemListStart
+        \resumeItem{Migrated 2000+ support requests between Axosoft and Atlassian Jira using RESTful APIs.}
+        \resumeItem{Collaborated with multiple teams to ensure functionality parity and workflow continuity post-migration.}
+      \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+%-----------PROJECTS-----------
+\section{Projects}
+    \resumeSubHeadingListStart
+      \resumeProjectHeading
+          {GPT-2 Transformer Implementation}{}
+          \resumeItemListStart
+            \resumeItem{Implemented core components of the GPT-2 transformer model in CUDA, including encoder layers, GELU activation, and layer normalization, optimized for GPU parallelism.}
+            \resumeItem{Deployed a custom GPT-2 inference pipeline on NCSA’s Delta HPC cluster, leveraging high-throughput compute nodes for performance evaluation.}
+          \resumeItemListEnd
+    \resumeSubHeadingListEnd
+
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages:} SystemVerilog, Verilog, C/C++, Python, Java, CUDA, JavaScript \\
+     \textbf{Tools/Frameworks:} Vivado, Vitis, Verilator, STM32CubeIDE, Postman, Jira, git, REST APIs, Node.js}}
+ \end{itemize}
+
+%-------------------------------------------
+\end{document}
