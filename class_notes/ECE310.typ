@@ -76,7 +76,7 @@ Signals:
     [Discrete-domain (digital) $ #sym.arrow x[n] "for" (n in ZZ)$ ]
 )
 Notation is technically important, $x[n]$ refers to a singular sample at n. A signal is represented with ${x[n]}_n "for" n in ZZ$
-, and a system can be represented as $y[n] = S{x[n]} "for" n in ZZ$. However, I really cannot be bothered to do this, and most problems don't either.
+, and a system can be represented as ${y[n]} = S{x[n]} "for" n in ZZ$. However, I really cannot be bothered to do this, and most problems don't either.
 
 == LTI/LSI Systems
 
@@ -98,7 +98,7 @@ Thus, $y[n] = x[n^2 - 2n n_o + n_o^2]$. Applying the same time shift to the outp
 These are not the same expression, and thus this system is time-variant. 
 
 == The Delta Function
-Similar to the (delta function) from ECE 210. Except its not an infinite spike. 
+Similar to the delta function from ECE 210. Except its not an infinite spike. 
 
 $delta[n] := cases(1 "if" n = 0,
                 0 "otherwise")$
@@ -207,8 +207,10 @@ $S{h[n]}$ is BIBO stable iff $sum_(k = -infinity)^(infinity) |h[n]| < infinity$.
 In general, a system with transfer function $H(z)$ and associated $"ROC"_H$ is stable if it contains $|z| = 1$ (the unit circle).
 
 With problems with multiple terms within the transfer function, the ROC is at least the intersection of all terms.
+For problems that ask to find a bounded input which will result in a bounded output for a non-bounded system, use pole-zero cancellation.
+For problems that ask to find a bounded input which results in an unbounded output, try to make divergent terms non-zero (delta function does the trick usually).
 
-An LTI system is marginally stable if its ROC is open at the unit circle $|z| = 1$.
+An LTI system is #text(weight: "bold")[marginally stable] if its ROC is open at the unit circle $|z| = 1$.
 
 = Midterm 2. 
 
