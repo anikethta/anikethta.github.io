@@ -9,7 +9,7 @@
     )
 
     set text(
-        font: "New Computer Modern",
+        font: "New Computer Modern Math",
         size: 12pt,
     )
 
@@ -123,6 +123,8 @@ Some useful properties of convolution:
 #list(
     [$"start point" = ("start of" x[n]) ("start of" h[n]) $],
     [$"end point" = ("end of" x[n]) ("end of" h[n]) $],
+    [$"start index" = ("start index of" x[n]) + ("start index of" h[n])$],
+    [$"end index" = ("end index of" x[n]) + ("end index of" h[n])$],
     [Convolution is associative, distributive, commutative (and linear)],
 )
 
@@ -210,7 +212,22 @@ With problems with multiple terms within the transfer function, the ROC is at le
 For problems that ask to find a bounded input which will result in a bounded output for a non-bounded system, use pole-zero cancellation.
 For problems that ask to find a bounded input which results in an unbounded output, try to make divergent terms non-zero (delta function does the trick usually).
 
-An LTI system is #text(weight: "bold")[marginally stable] if its ROC is open at the unit circle $|z| = 1$.
+An LTI system is #text(weight: "bold")[marginally stable] if its ROC is open at the unit circle $|z| = 1$. 
+
+Define: $x[n] = a^n u[n] "and" h[n] = b^n u[n] "where" |a| = |b| = 1$. We can thus expand $a = e^(j phi)$ and $b = e^(j theta)$, respectively. The system output $y[n] = sum_(k = -infinity)^(infinity) x[n - k]h[k] = sum_(k = -infinity)^(infinity) e^(j phi (n - k))e^(j theta (k)) u[n - k] u[k]$. We factor out $exp(j phi n)$ and simplify the summation bounds to rewrite this as:
+
+$y[n] = e^(j phi n) sum_(k = 0)^(n)e^(j k (theta - phi)) = e^(j phi n)(frac(1 - e^(j(theta - phi)(n + 1)), 1 - e^(j (theta - phi)))) u[n]$. 
+
+When $phi = theta$, the indetermant expression can be written as:
+
+ $y[n] = e^(j phi n)sum_(k = 0)^n (1) = (n + 1) e^(j phi n) u[n]$. 
+ 
+ We can see this expression is unbounded due to the $(n + 1)$ term. 
+
+When $phi != theta$, y[n] oscillates, but remains bounded. 
+
+#text(weight: "bold")[Thus, in a marginally stable system, only inputs that match at least one unit circle pole of the system will produce unbounded outputs. Otherwise, it will be bounded. ]
+
 
 = Midterm 2. 
 
