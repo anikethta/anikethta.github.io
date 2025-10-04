@@ -293,5 +293,60 @@ Shared Memory Limitations
     [However, there is a maximum of 2048 threads/SM, which inherently limits number of blocks to 8.]
 )
 
+== GPU Memory Systems
+
+SRAM - #emph[dual inverter feedback loop with two NMOS transistors for R/W (6T design)]
+DRAM - #emph[literally a NMOS transistor and capacitor chained together, alongside a BIT and SELECT line. ]
+#list(
+    [destructive reads, must be rewritten (making it dynamic)],
+    [many DRAM cells share a bit line ($~$1k)],
+    [DRAM bank - A 2D array of DRAM cells w/ sense amps for higher speed/reading tiny currents],
+    [Row Address #sym.arrow Row Decoder #sym.arrow DRAM Array #sym.arrow Sense Amps #sym.arrow Column Latches & MUX],
+    [DRAM never returns one bit, but rather a row burst],
+    [Accessing data in different DRAM bursts is slow, but accessing data within the same burst is so much faster because of the column latches.]
+)
+
+=== Memory Coalescing
+Memory coalescing occurs when threads in the same warp access consecutive memory locations within the same burst, at which point
+the hardware coalesces them into one DRAM transaction. 
+#list(
+    [Multiple transactions within a warp is called memory divergence],
+    [Without caching, DRAM accesses can be 100s of cycles, so we want to maximize memory coalescing if possible],
+    [Use of shared memory generally enables coalescing]
+)
+
+(Trivial) Example:
+```c
+int i = blockDim.x * blockIdx.x + threadIdx.x;
+z[i] = x[i] + y[i]; // consecutive threads access consecutive memory locations
+```
+
+=== Caches
+Caches are an "array" of cache lines, each of which can hold data from several consecutive memory locations (spatial locality).
+When data is requested from global memory, an entire cache line that includes the specified data is loaded into cache.
+#list(
+    [Cache data is technically a copy of the original data, but we need to write-back to global memory if it has been modified (cache coherence)],
+    [Employs tags and indexes (size dependent on cache associativity) to map data to/from main memory],
+    [Due to being substantially smaller than main memory, caches need some method to make room (eviction) for new lines once full. A commonly used eviction policy is LRU (least-recently used).]
+)
+
+Spatial vs. Temporal locality
+#list(
+    [Spatial: consecutive memory locations are caches],
+    [Temporal: data accessed repeatedly in a short period of time is caches (may also move from L2 #sym.arrow L1 cache)]
+)
+
+The programmer can control shared memory contents, but only the microarchitecture controls caching behavior--except for the constant cache.
+\
+\
+\
+Constant Cache/Constant Memory
+#list(
+    [Read-only, does not support WB to global memory],
+    [Declared as global variable, outside of the kernel: ```c __constant__```],
+    [Must initialize constant memory from host with ```c cudaMemcpyToSymbol()```],
+    [Can only allocate up to 64kB]
+)
+
 = Midterm 2
 Will update this later...
