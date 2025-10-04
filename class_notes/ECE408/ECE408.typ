@@ -348,5 +348,79 @@ Constant Cache/Constant Memory
     [Can only allocate up to 64kB]
 )
 
+== Miscellaneous Optimization Strategies
+#text(weight: "bold")[Thread Coarsening]
+#list(
+    [A thread is assigned #emph[multiple] units of parallelizable work],
+    [#text(weight: "bold")[Advantages]
+        #list(
+            [reduces overhead incurred by parallelization],
+            [ex: redundant memory accesses/computations, control divergence]
+        )
+    ],
+    [#text(weight: "bold")[Disadvantages]
+        #list(
+            [underutilization of resources],
+            [more resources per thread which may affect occupancy]
+        )
+    ]
+)
+
+#text(weight: "bold")[Loop Unrolling]
+#list(
+    [Less loop iterations #sym.arrow fewer branches (long latency without good branch prediction)],
+    [Exposes independent instructions for Instruction Scheduling],
+    [Controlled w/ preprocessing directives (ex: ```c #pragma unroll 4```)]
+)
+
+#text(weight: "bold")[Double Buffering]
+#list(
+    [Eliminates false data dependences by using a different memory buffer for writing data than the memory buffer containing the data being read]
+)
+
+== Convolution (Lab 4)
+
+Idea: Convolution filter (kernel, mask) "slides" across input, we take a dot product between the two, and the result is ONE entry on the output.
+
+Convolution Filter is unchanged in execution
+#list(
+    [Good choice for constant memory ($~$5 cycles w/ caching)]
+)
+
+Tiled Convolution
+#list(
+    [Just like with matrix multiplication, reading input values from global memory each time will murder your performance.],
+    [There is a lot of potential for reuse with convolution]
+)
+
+#text(weight: "bold")[Three Main Tiling Strategies]:
+#list(
+    [#text(weight: "bold")[Strategy 1]
+    #list(
+        [Thread block size covers output tile],
+        [Include halos into shared memory],
+        [Advantages include global memory coalescing, and no branch divergence during computation],
+        [Disadvantages include some threads doing >1 load operaiton, resulting in branch divergence. We also nede slightly more shared memory (trivial)]
+    )],
+    [#text(weight: "bold")[Strategy 3]
+    #list(
+        [Thread block size covers output tile],
+        [Threads read halo values directly from global memory, load only "core" values into shared memory],
+        [Advantages include optimal reuse of shared memory],
+        [Disadvantages include branch divergence, and no memory coalescing as you'll only have a few threads accessing a few halo values from global memory (although this is less of an issue on modern GPU's which large caches)]
+    )],
+    [#text(weight: "bold")[Strategy 2]
+    #list(
+        [Block size covers input tile (input tile size = output tile size + 2 $times$ mask radius)],
+        [Load input tile in one step],
+        [Some inactive threads when calculating output]
+    )]
+)
+
+== Machine Learning (Intro)
+Building applications whose logic isn't fully known.
+
+Classification, Regression require structured data. Transcription, Translation require unstructured data.
+
 = Midterm 2
 Will update this later...
