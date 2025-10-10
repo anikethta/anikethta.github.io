@@ -422,5 +422,7 @@ Building applications whose logic isn't fully known.
 
 Classification, Regression require structured data. Transcription, Translation require unstructured data.
 
+[Will Update this section sometime before midterm 2 rolls around, surely]
+
 = Midterm 2
 Will update this later...
