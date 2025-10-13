@@ -469,7 +469,30 @@ a list of "changes" to the original embedding vectors--reflecting the relationsh
 #text(weight: "bold")[The transformer architecture is multi-headed, and inherently parallelized]. This allows for the transformer to "learn" many distinct relationships between
 context and meaning.
 
-Multiple attention blocks and in-between operations allow the transformer to determine more nuanced and abstract ideas about a given input.
+Multiple attention blocks and in-between operations allow the transformer to determine more nuanced and abstract ideas about a given input. After each self-attention block is finished, the "updated" embeddings are concatenated, and merged via projection by another weight matrix $W_O$.
+
+== Feed Forward Network (FFN)
+
+In the transformer architecture, the FFN is placed right after the self-attention mechanism, and is responsible for introducing non-linearity into the system (key component of machine learning).
+
+=== GeLU Activation
+
+Better than ReLU in many aspects because its differentiable at the origin, and smoother.
+
+$
+  "GELu"(x) = x dot Phi(x)
+$
+
+where $Phi(x)$ is the CDF of the Gaussian Distribution. When implemented, we use an approximation to minimize compute resources.
+
+=== Residual Correction
+#list(
+    [Adds the input to the output of a sub-layer (FFN, self-attention, etc.)],
+    [When implemented in CUDA it reduces down to a vec-add kernel (trivial).],
+    [Helps preserve information & prevents issues with vaninishing gradients during backprop]
+)
+
+=== Layer Normalization
 
 = Midterm 2
 Will update this later as midterm 2 rolls around :D
