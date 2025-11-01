@@ -231,8 +231,87 @@ When $phi != theta$, y[n] oscillates, but remains bounded.
 
 = Midterm 2. 
 
-Will update this when midterm 2 rolls around :D
+== CTFT and DTFT
 
-= Midterm 3
+Continuous-Time Fourier Transform (CTFT): ${ x(t) }_(t in RR) #sym.arrow.l.r {X_c (Omega)}_(Omega in RR) $ where:
+
+$
+X_c (Omega) = integral_(-infinity)^(infinity) x(t) e^(-j Omega t) d Omega
+$
+
+Discrete-Time Fourier Transform (DTFT): ${ x[n] }_(n in ZZ) #sym.arrow.l.r {X_d (omega)}_(omega in RR) $ where:
+
+$
+X_d (omega) = sum_(-infinity)^(infinity) x[n] e^(-j Omega n)
+$
+
+Important Things to keep in mind about *both* CTFT and DTFT:
+    - CTFT converts a continuous input into a continuous output. DTFT converts a discrete input into a continuous output.
+    - DTFT is a special case of the Z-transform, CTFT is a special case of the Laplace transform. 
+    - Both DTFT/CTFT provide a representation of a signal as a linear combination of complex exponentials (which can be thought of as 2D vectors in the complex plane)
+
+DTFT properties
+    - $X_d (omega)$ is $2 pi$-periodic
+    - *If ${ x[n] }_(n in ZZ)$ is real-valued*, $|X_d (- omega)| = |X_d (omega)|$ and $angle X_d (- omega) = - angle X_d (omega)$ (Magnitude is symmetric, phase is anti-symmetric)
+    - Convolution in $n$-domain is multiplication in the $omega$-domain. Thus, LTI systems have a corresponding frequency response $H_d (omega)$
+    - Most CTFT properties have an analogue for the DTFT
+    - Inverse DTFT: $x(t) = (2 pi)^(-1) integral_(- pi)^(pi) X_d (omega) e^(j omega n) d omega$
+
+== Sampling and ADC/DAC
+
+Idea: We have a *continuous* signal $x_c (t)$, and every $T$ seconds, we take a sample of it. We then end up with a *discrete* signal $x[n] = x_c (n T)$. Our sampling period is $T$, and our sampling frequency is $f_s = 1/T$.
+
+Question: What is the relationship between $X_c (Omega)$ and $X_d (omega)$? In other words, what effect does sampling have in the Fourier domain?
+
+Quick lil' derivation:
+
+By definition, we know  $x[n] = x_c (n T) = (2 pi)^(-1) integral_(-infinity)^(infinity) X_c (Omega) e^(j Omega (n T)) d Omega$. Furthermore, $x[n] = (2 pi)^(-1) integral_(-pi)^(pi) X_d (omega) e^(j omega n) d omega$. 
+
+Thus, $ integral_(-infinity)^(infinity) X_c (Omega) e^(j Omega (n T)) d Omega = integral_(-pi)^(pi) X_d (omega) e^(j omega n) d omega$. Substituting $omega = Omega T$, we get:
+$ (1/T) integral_(-infinity)^(infinity) X_c (omega / T) e^(j omega n) d omega = integral_(-pi)^(pi) X_d (omega) e^(j omega n) d omega
+$
+
+Lastly, because $X_c$ is $2 pi$-periodic, we can expand the LHS as the following. #footnote[
+Note: Omitted the shift of $omega$ in the complex exponential term because a shift by $2 pi k$ in the exponent corresponds to a 360 degree rotation (thus leaving the complex term unchanged).]
+
+$
+(1/T) integral_(-infinity)^(infinity) X_c (omega / T) e^(j omega n) d omega = 1/T sum_(k in ZZ) integral_(-pi + 2 pi k)^(pi + 2 pi k) X_c ((omega + 2 pi k) / T) e^(j omega n) d omega
+$
+
+Matching the integrands of this expanded expression and the DTFT integral, we determine:
+
+$
+  X_d (omega) = 1/T sum_(k in ZZ) X_c ((omega + 2 pi k)/ T)
+$
+
+=== Aliasing and Nyquist Frequency
+
+Suppose we have a *band-limited* signal whose Fourier trnasform is $X_c (Omega)$. Thus, $X_c (Omega) = 0$ for $|Omega| > B$,  where $B$ is the bandwidth (highest-frequency) of the signal. 
+
+If we sample this signal, we get that $X_d (omega) = 1/T sum_(k in ZZ) X_c ((omega + 2 pi k)/ T)$. Graphically, this looks like an infinite series of scaled & shifted versions (aliases) of $X_c (Omega)$, each of which centered at some $2 pi k$. To find where the bandwidth gets "mapped" to after sampling, we use the relation $omega = Omega T$ where $Omega #sym.arrow B$. 
+
+We know B is highest-frequency in our original signal, and has units rad/s, so $B = 2 pi f_(B)$. We also know $T = 1/f_s$. Thus, we can express $omega_B$ (the bandwidth of the signal *after* sampling) as $omega_B = B T = 2 pi f_B/f_s$
+
+Each of the aliases is centered at $2 pi k$ for $k in ZZ$. They have the potential to overlap if the bandwidth of each alias in the $omega$-domain exceeds $pi$ (think about it graphically). This overlap is called *aliasing*, and it causes us to lose information about the original signal.
+
+Thus, if we don't want aliasing to occur, the bandwidth in the $omega$-domain must be less than or equal to $pi$.
+
+Equivalenty, $omega_B =  2 pi f_B/f_s <= pi$ #sym.arrow *$f_s >= 2 f_B$*
+
+This condition is called the Nyquist Criterion, and the *Nyquist Frequency* is $2 f_B$, which is the lowest sampling frequency in which you will observe no aliasing. 
+
+In general there are two ways to resolve aliasing for ADC conversion:
+ - Increase $f_s$ to at least Nyquist Frequency.
+ - Use a low-pass filter (LPF) on $X_c (Omega)$ to artificially reduce $f_B$. #footnote[This comes at a cost of losing information about the original signal. However, often times the information lost by low-passing is much less than the potential information lost by aliasing. In other scenarios however, we can actually just allow aliasing to occur, and then use a digital LPF in the $omega$-domain to select the range of frequencies we need. There was a homework problem about this.]
+
+=== Ideal ADC and DAC
+
+The process of sampling converts a CT signal to a DT one, and so that process is called Analog-to-Digital Conversion (ADC).
+
+Ideal Digital-to-Analog conversion basically consists of two steps:
+- Apply a LPF to remove the higher-frequency aliases, and just retain the frequency spectrum centered at $omega = 0$.
+- Properly scale/resize the resulting frequency spectrum to obtain that of $X_c (Omega)$
+
+= Final
 
 Will update this when midterm 3 rolls around :D
