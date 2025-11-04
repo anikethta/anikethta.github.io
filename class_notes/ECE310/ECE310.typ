@@ -62,7 +62,7 @@
 #show: template.with(
     class_name: "ECE 310",
     notes_title: "Review Notes for ECE 310 (Digital Signal Processing)",
-    names: ("Aniketh Tarikonda (aniketh8@illinois.edu)", ""),
+    names: ("Aniketh Tarikonda", ""),
 )
 
 = Midterm 1
@@ -257,6 +257,15 @@ DTFT properties
     - Most CTFT properties have an analogue for the DTFT
     - Inverse DTFT: $x(t) = (2 pi)^(-1) integral_(- pi)^(pi) X_d (omega) e^(j omega n) d omega$
 
+=== Frequency Response
+
+For any *stable* LSI system, we have $H_d (omega) = H(z)|_(z = exp(j omega))$ where $H(z)$ denotes the transfer function. 
+
+If we have an input signal $x[n] = exp(j omega_0 n)$, and pass it through a LSI system with frequency response $H_d (omega)$, the output $y[n] = H_d (omega_0)exp(j omega_0 n)$
+In other words, signals of the form $A exp(j omega_0 n)$ are eigenfunctions of LSI systems. 
+
+Similarly, $x[n] = cos(omega_0 n + phi) #sym.arrow |H_d (omega_0)| cos(omega_0 n + phi + angle X_d (omega_0))$
+
 == Sampling and ADC/DAC
 
 Idea: We have a *continuous* signal $x_c (t)$, and every $T$ seconds, we take a sample of it. We then end up with a *discrete* signal $x[n] = x_c (n T)$. Our sampling period is $T$, and our sampling frequency is $f_s = 1/T$.
@@ -278,7 +287,7 @@ $
 (1/T) integral_(-infinity)^(infinity) X_c (omega / T) e^(j omega n) d omega = 1/T sum_(k in ZZ) integral_(-pi + 2 pi k)^(pi + 2 pi k) X_c ((omega + 2 pi k) / T) e^(j omega n) d omega
 $
 
-Matching the integrands of this expanded expression and the DTFT integral, we determine:
+Using the change of variables $omega' = omega - 2 pi k$, we can further simplify the bounds of the integral expression. Matching the integrands of this expanded expression and the DTFT integral, we determine:
 
 $
   X_d (omega) = 1/T sum_(k in ZZ) X_c ((omega + 2 pi k)/ T)
@@ -312,6 +321,39 @@ Ideal Digital-to-Analog conversion basically consists of two steps:
 - Apply a LPF to remove the higher-frequency aliases, and just retain the frequency spectrum centered at $omega = 0$.
 - Properly scale/resize the resulting frequency spectrum to obtain that of $X_c (Omega)$
 
+== DFT 
+
+The DTFT is continuous in the Fourier domain, wheras the DFT is discretized in the Fourier domain. 
+
+Given a length-N signal ${x[n]}_(n=0)^(N - 1)$, the N-point DFT ${X[k]}_(k=0)^(N - 1)$ is defined:
+
+$
+  X[k] = sum_(n = 0)^(N - 1) x[n] e^(-j (2 pi n k)/N) = sum_(n = 0)^(N - 1) x[n] W_N^(- k n) = sum_(n = 0)^(N - 1) x[n] e^(- j omega n)|_(omega = (2 pi k )/N)
+$
+
+Won't come up on the midterm (probably), but the DFT allows for some really cool matrix/vector representations in Fourier Analysis, as it is a linear transformation. 
+
+=== DFT properties
+
+DFT properties are pretty similar to DTFT, albeit with some modifications. 
+Here are a few of the important ones:
+- DFT is periodic by $N$. Thus, $X[k + a N] = X[k]$,  $a in ZZ$
+- $x[angle.l n - m angle.r_N] #sym.arrow exp(-j (2 pi m k)/N) X[k] = W_N^(-k m) X[k]$
+- $x[n] #sym.ast.op.o h[n] = X[k] H[k]$
+
+=== Zero-Padding
+
+Idea: if we 'artificially' increase the length of the input signal by adding zeros to the end of it, the DTFT is unchanged. However the DFT, which has the same number of samples as the input signal, increases in length.
+More specifically, it takes more "samples" of the DTFT, yielding a higher resolution of the frequency spectrum of the original signal. 
+
+This is important to keep in mind when doing spectral analysis, and we need an increased resolution to better identify peaks. 
+
+=== Windowing
+
+Windowing is a method to attenuate spectral leakage, which is a consequence of the DFT. 
+
+Windowing is just multiplication in the time domain. The two windows we use for this class are Rectangular (boxcar) windows and Hamming windows. 
+Rectangular window has a narrower main-lobe frequency response, but larger side-lobes. The Hamming window has a wider main-lobe, but significantly attenuated side-lobes in its frequency response. 
 = Final
 
 Will update this when midterm 3 rolls around :D
