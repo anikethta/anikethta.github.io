@@ -340,6 +340,7 @@ Here are a few of the important ones:
 - DFT is periodic by $N$. Thus, $X[k + a N] = X[k]$,  $a in ZZ$
 - $x[angle.l n - m angle.r_N] #sym.arrow exp(-j (2 pi m k)/N) X[k] = W_N^(-k m) X[k]$
 - $x[n] #sym.ast.op.o h[n] = X[k] H[k]$
+- $X[angle.l k - m angle.r_N] = exp(j (2 pi m n)/N)x[n]$
 
 === Zero-Padding
 
@@ -354,6 +355,23 @@ Windowing is a method to attenuate spectral leakage, which is a consequence of t
 
 Windowing is just multiplication in the time domain. The two windows we use for this class are Rectangular (boxcar) windows and Hamming windows. 
 Rectangular window has a narrower main-lobe frequency response, but larger side-lobes. The Hamming window has a wider main-lobe, but significantly attenuated side-lobes in its frequency response. 
+
+=== Spectral Analysis
+- Identify peaks (sinusoidal components) within a finite-length signal.
+- Given some finite-length superposition of sinusoidal components can we identify peaks?
+
+We can use the DFT to do this analysis, but we must be careful about spectral leakage. 
+For example, say we have signal $x[n] = A cos(omega_0 n)$, defined for $0 <= n <= N - 1$.
+
+Given $omega_0$, we know the period $N_0 = (2 pi)/omega_0$. Thus, the number of full cycles captured in the n-domain is
+$N/(N_0) = (N omega_0)/(2 pi)$. If this value is an integer, then the DFT will capture this sinusoid perfectly (this can be verified by manually doing the DFT, and if done right all of the values of $k$ which don't correspond with peaks should evaluate to 0).
+
+If the number of full cycles is not an integer, we will have a periodic discontinuation at the end. The DFT assumes all signals to be periodic, and so it will introduce new
+(nonzero) components because of the discontinuation. 
+
+Challenges to Spectral Analysis
+- If frequency components are to close together, we may not be able to distinguish them -> we need higher resolution
+- If amplitudes vary greatly, you could have a sidelobe of one component mask the mainlobe of another, smaller frequency component. 
 = Final
 
 Will update this when midterm 3 rolls around :D
