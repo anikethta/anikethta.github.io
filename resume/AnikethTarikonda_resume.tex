@@ -107,7 +107,7 @@
         \resumeItem{Honors: James Scholar, Dean's List (Fall 2024–Present), Member of IEEE-HKN Alpha Chapter}
         \resumeItem{Cumulative GPA: 3.97 / 4.00}
         \resumeItem{Relevant Coursework: Applied Parallel Programming (GPUs \& CUDA), Digital Systems Laboratory (FPGAs), Digital Signal Processing, Analog Signal Processing, Data Structures}
-        \resumeItem{Planned Coursework: Computer Organization and Design, Intro to VLSI System Design}
+        \resumeItem{Planned Coursework: Computer Organization and Design, Intro to VLSI System Design (Cadence Virtuoso/Innovus)}
     \resumeItemListEnd
   \resumeSubHeadingListEnd
 
@@ -135,24 +135,23 @@
         \resumeItem{Developed a text-to-image generation feature using ChatGPT image APIs, converting natural language prompts into visuals.}
       \resumeItemListEnd
 
-    \resumeSubheading
-      {Alameda County IT Department}{Oakland, CA}
-      {IT Intern}{June 2022 -- Aug. 2022}
-      \resumeItemListStart
-        \resumeItem{Migrated 2000+ current and archived requests between Axosoft and Atlassian Jira through the use of RESTful APIs.}
-        \resumeItem{Coordinated with various subteams throughout the department in order to ensure all previously-used features would be preserved.}
-      \resumeItemListEnd
-
   \resumeSubHeadingListEnd
 
 %-----------PROJECTS-----------
 \section{Projects}
     \resumeSubHeadingListStart
       \resumeProjectHeading
-          {GPT-2 Transformer Model Implementation}{}
+          {FPGA Flight Simulator with 3D Rendering}{(Ongoing)}
           \resumeItemListStart
-            \resumeItem{Implementing core components of the GPT-2 transformer model in CUDA, including encoder layers, GELU activation, and layer normalization, optimized for GPU parallelism.}
-            \resumeItem{Deploying a custom GPT-2 inference pipeline on NCSA’s Delta HPC cluster, leveraging high-throughput compute nodes for performance evaluation.}
+            \resumeItem{Designed and implemented a hardware-accelerated flight simulator on the RealDigital Urbana board using SystemVerilog, featuring a custom GPU pipeline, DDR3 memory interfaces, and real-time 3D graphics rendering to a HDMI display.}
+            \resumeItem{Developed a MicroBlaze-driven control subsystem to process keyboard inputs and transmit graphics data to the hardware GPU pipeline over AXI interface(s).}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {GPT-2 Transformer Model Implementation}{(Ongoing)}
+          \resumeItemListStart
+            \resumeItem{Implementing core components of the GPT-2 transformer model in CUDA—including the attention mechanism, encoder layers, and layer normalization—optimized for GPU parallelism.}
+            \resumeItem{Implemented optimizations to improve inferencing performance, including but not limited to KV-caching, reduction trees, and leveraging tensor-core-accelerated matrix operations.}
+            \resumeItem{Deploying a custom GPT-2 inference pipeline on NCSA’s Delta HPC cluster, leveraging high-throughput compute nodes and NVIDIA Nsight Compute for performance profiling.}
           \resumeItemListEnd
     \resumeSubHeadingListEnd
 
