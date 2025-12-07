@@ -241,7 +241,7 @@ Each Thread can:
     [Read-only per-grid constant memory ($~$5 cycles with caching)]
 )
 
-== Matrix Multiplication - Labs 2 & 3
+== Matrix Multiplication
 
 === Naive Implementation
 Assign one thread to each element in the output matrix, read from global memory for each value in the output matrix.
@@ -378,7 +378,7 @@ Constant Cache/Constant Memory
     [Eliminates false data dependences by using a different memory buffer for writing data than the memory buffer containing the data being read]
 )
 
-== Convolution (Lab 4)
+== Convolution
 
 Idea: Convolution filter (kernel, mask) "slides" across input, we take a dot product between the two, and the result is ONE entry on the output.
 
@@ -417,9 +417,195 @@ Tiled Convolution
     )]
 )
 
+= Midterm 2
+
+== Reduction
+
+- Reduction reduces a large array of data into a single value, using a *commutatative* and *associative* operator (+, $*$, min, max, etc.)
+- Sequential reduction is $O(N)$. Example sequential implementation is shown below:
+
+```c 
+// sequential reduction
+float sum = 0;
+for (int v : array) {
+    sum += v;
+}
+```
+
+- For relatively small N, we prefer the sequential algorithm due to the kernel launch & memory transfer overhead with launching the parallel reduction kernel.
+
+=== Parallel Reduction Algorithm
+
+- Reduction trees, which allow for $O(log(N))$ "steps" and $O(N)$ total operations. 
+- Each thread is assigned to 2 elements in the input array
+- The naive implementation uses a stride which doubles on each step, but the memory access pattern is uncoalesced, and it suffers from control divergence.
+```c 
+// naive parallel reduction
+for (unsigned stride = 1; stride < blockDim.x; stride *= 2) {
+    __syncthreads();
+    if (threadIdx.x % stride == 0) {
+        partialSum[2*tx.x] += partialSum[2*tx.x + stride];
+    }
+}
+// the __syncthreads() is necessary to avoid errors stemming from race conditions
+```
+- The better reduction strategy stores values in contiguous segments of memory, which allows us to make better use of DRAM, and reduce the impact of control divergence.
+```c 
+// better parallel reduction
+for (unsigned stride = blockDim.x; stride >= 1; stride /= 2) {
+    __syncthreads();
+    if (tx.x < stride) {
+        partialSum[tx.x] += partialSum[tx.x + stride];
+    }
+}
+```
+=== Further Optimizations for Parallel Reduction
+- We can always load a segment into shared memory, and perform reduction on that segment. This would involve an initial reduction step like:
+```c 
+__shared__ sums[BLOCK_SIZE];
+sums[tx.x] = partialSum[tx.x] + partialSum[tx.x + BLOCK_SIZE];
+```
+- We can use warp-level primitives once the reduction tree hits a certain point (these warp-level operations use register memory instead of shared memory)
+- Thread Coarsening
+
+== Scan (Prefix Sum)
+- Similar to reduction, operator must also be commutative and associative.
+- Sequential scan algorithm is as follows:
+
+```c 
+// sequential scan (inclusive)
+output[0] = input[0];
+for (unsigned i = 1; i < N; i++) {
+    output[i] = input[i] + output[i - 1];
+}
+```
+
+=== Kogge-Stone Scan
+- A hardware adder topology as well
+- Uses reduction trees (each element is a reduction of all previous elements)
+- Low latency, but not work efficient. 
+- 1-1, number of threads is the same as number of elements in shared memory
+- Following code implements the high-level idea of Kogge-Stone
+
+```c
+// kogge-stone implementation (naive, has bugs)
+__shared__ float buffer_s[BLOCK_SIZE];
+buffer_s[tx.x] = input[tx.x];
+__syncthreads();
+
+for (unsigned stride = 1; stride < BLOCK_SIZE; stride *= 2) {
+    if (tx.x >= stride) {
+        buffer_s[tx.x] += buffer_s[tx.x - stride]; // this line has issues
+    }
+    __syncthreads();
+}
+```
+
+- There are synchronization issues with this specific implementation--we can have different threads R/W the same location at the same time. 
+- We can separate out read/write operations with a ```c __synchreads() ```, but this enforces a false data dependency (WAR)
+- The better solution is to double buffer:
+
+```c 
+__shared__ float buffer_s1[BLOCK_SIZE];
+__shared__ float buffer_s2[BLOCK_SIZE];
+
+float* ptr_buffer_s1 = buffer_s1;
+float* ptr_buffer_s2 = buffer_s2;
+
+// use ptr_buffer_s instead of buffer_s, and swap them on each reduction step
+```
+
+- As aforementioned, Kogge-Stone is low latency, but not work efficient. It does $log(N)$ steps, and $O(N)$ operations per step. Thus, it does $O(N log(N))$ operations, which is actually worse than the sequential scan.
+
+=== Brent-Kung Scan
+- Has a higher latency (more steps) than Kogge-Stone, but is work efficient. 
+- Each thread loads *two* elements.
+- Relies on balanced trees (not to be confused with balanced trees from CS225 lmao)
+- Idea: traverse from leaves to root building partial sums at particular internal nodes. Then have a post-scan step where you traverse back up the tree and complete the full scan. 
+
+```c 
+__shared__ float T[2 * BLOCK_SIZE];
+// omitted some initialization code
+
+// REDUCTION STEP
+int stride = 1;
+while (stride < 2 * BLOCK_SIZE) {
+    __syncthreads();
+    int index = 2 * stride * (tx.x + 1) - 1;
+    if (index < 2 * BLOCK_SIZE && (index - stride) >= 0) {
+        T[index] += T[index - stride];
+    }
+
+    stride *= 2;
+}
+
+// POST-SCAN STEP
+stride = BLOCK_SIZE/2;
+while (stride > 0) {
+    __syncthreads();
+    int index = 2 * stride * (tx.x + 1) - 1;
+    if ((index + stride) < 2*BLOCK_SIZE) {
+        T[index + stride] = T[index];
+    }
+
+    stride /= 2;
+}
+```
+
+- In contrast to Kogge-Stone, Brent-Kung is $O(N)$ work, so its work efficient. But it takes twice the number of steps, and uses half the number of threads. 
+
+=== Hierarchical Scan
+- If the input array is too large, each block can only compute a segment of the overall input. 
+- To consolidate these segments, we use a three-kernel approach:
+- Kernel 1: Performs scan operation on each block, stores partial sums of each block into a separate array.
+- Kernel 2: Performs scan operation on the block of partial sums. 
+- Kernel 3: Adds partial sum $i$ to all elements in scan block $i + 1$ (output of Kernel 1)
+
+== Histograms and Atomics
+- Histogramming is a method of extracting features/patters from data. For each element in a set, you identify its corresponding "bin" and increment it.
+- If you try to do a naive implementation (without locks/atomics), you can potentially have multiple threads accessing the same memory location (and at least one of which can write)
+- To avoid data races, concurrent read-modify-write operations need to be made mutually exclusive. CPU's often implement this using locks (mutexes), but this is a terrible idea for SIMD execution models.
+- Atomic operations are a single ISA instruction which guarantee exclusivity without the risk of deadlock which comes with locks. Atomicity is enforced by microrchitecture.
+- Example histogramming code:
+
+```c 
+// setup code omitted (trivial)
+
+unsigned char b = input[idx];
+atomicAdd(&bins[b], 1); // this is built in to CUDA and the ISA
+```
+
+- An optimized histogram kernel has coalesced memory access patterns:
+
+```c 
+// better histogram code
+int idx = tx.x + bx.x * bd.x;
+int stride = bd.x * gd.x; // total number of threads
+
+while (i < size) {
+    unsigned char b = input[i];
+    atomicAdd(&histogram[b], 1);
+    i += stride;
+}
+```
+- Atomic operations on global memory have terrible latency.
+- Throughput is the rate at which an application can execute an atomic operation on a particular location. If many threads attempt to do atomic operations on the same address, the memory bandwidth is reduced significantly. You have to pray that values propagate to L2 cache.
+- Better approach is privatizing the histogram (making a local copy in shared memory)
+- Similar to previous implementation, except you're writing to private histogram. You also have to write back to output:
+
+```c 
+// after writing to private histogram
+__syncthreads();
+
+if (tx.x < 256) {
+    atomicAdd(&histogram[tx.x], private_histogram[tx.x]);
+}
+
+```
+
 = Transformers
 Note: This section is for the GPT project - this is less relevant for the CNN project. 
-This also isn't an AI class per se, but some of these topics are fair game for demo questions.
+This also isn't an AI class per se, but some of these topics are fair game for demo questions. *(update: nevermind! this is apparently fair game for MT2 as well, FML!)*
 
 == High-Level Overview of Transformers
 From a high level, transformers:
@@ -493,6 +679,3 @@ where $Phi(x)$ is the CDF of the Gaussian Distribution. When implemented, we use
 )
 
 === Layer Normalization
-
-= Midterm 2
-Will update this later as midterm 2 rolls around :D
