@@ -603,6 +603,100 @@ if (tx.x < 256) {
 
 ```
 
+== Sparse Matrices & SpMV
+- Often times we need to do operations with sparse matrices (mostly/significant amount of zeros)
+- *SpMV - Sparse Matrix-Vector multiplication*
+- Spatially and computationally inefficient to use regular matmul algorithms for sparse matrices
+- There are multiple representations for sparse matrices, each of which is viable in different scenarios.
+
+=== COO (Coordinate) Format
+- The most basic sparse matrix representation format--each non-zero value is stored in an array, 1-1 map between value and its respective row and column.
+- Parallel SpMV strategy involves assigning a thread to each non-zero value, each thread needs to *atomicAdd* its respective product to the output. 
+```c 
+unsigned i = threadIdx.x + blockIdx.x * blockDim.x;
+if (i < numNonZero) {
+    unsigned row = rows[i];
+    unsigned col = cols[i];
+    float val = input_matrix[i] * input_vector[col];
+    atomicAdd(&out[row], val);
+}
+```
+- This works best for #emph[really] sparse matrices.
+- Non-zero elements can be placed in any order, memory accesses to input are coalesced, no control divergence.
+- Atomic operations significantly limit the performance of COO SpMV at scale, and its not terribly space/work efficient. 
+
+=== CSR (Compressed Sparse Row) Format
+- Idea: 1-1 map between values and their respective columns, but keep values in the same row adjacent to each other, and have an array of row pointers which tell you the start of each row in the column/value array.
+- Parallel SpMV strategy involves assigning a thread to each row pointer, and update the corresponding output element (eliminates the need for atomic operations)
+```c 
+int r = threadIdx.x + blockIdx.x * blockDim.x;
+if (r < nrows) {
+    float val = 0.0f;
+
+    int start = rows[r];
+    int end = rows[r + 1];
+
+    for (int i = start; i < end; i++) {
+        val += data[i] * input_vector[cols[i]]
+    }
+
+    out[r] = val;
+}
+```
+- This is more space efficient than COO, and avoids atomic operations, so it scales better.
+- Has control divergence and uncoalesced memory accessses to the input matrix.
+- Hard to add new elements to the matrix (you'd have to put it in the right block within the data/column arrays, and then modify row pointers accordingly)
+
+==== CSC (Compressed Sparse Column) Format
+- This exists, and is kinda similar to CSR, but also not really.
+- Has the same disadvantages as CSR, but also needs atomics to write to output vector.
+- Not widely used.
+
+=== ELLPACK Format
+- Similar to CSR, you group non-zero values and their respective columns by row. Pad each row so its the same size, and store this padded array in column major order. 
+- Parallel SpMV strategy involves assigning a thread to each row, iterating through it (just like CSR)
+```c 
+int r = threadIdx.x + blockIdx.x * blockDim.x;
+
+if (r < nrows) {
+    float val = 0.0f;
+
+    for (int i = 0; i < num_elems; i++) {
+        val += data[nrows * i + r] * input_vector[cols[nrows * i + r]];
+    }
+
+    out[r] = val;
+}
+```
+- Has memory coalescing of input matrix, and its easier to add new non-zero elements.
+- Also has control divergence, reduced space efficiency due to the extra padding.
+- If you have several "exceptional" rows with a lot of elements, you can use *hybrid ELL + COO*, where the longest rows of the padded matrix are represented with COO.
+- hybrid ELL + COO allows us to reduce the padding (spatial overhead) and have less control divergence.
+- ELL is great for roughly random sparse matrices, may need hybrid ELL + COO when you have high variance with row size.
+
+=== JDS (Jagged Diagonal Storage) Format
+- Group non-zero elements by row (CSR), then sort these rows by size (keeping track of which row maps to where)
+- Like ELL, we can transpose this (column-major format) in order to enable better memory coalescing
+- Allows control divergence to be easily scalable
+- Implementation of JDS with transposition is below:
+```c 
+int r = threadIdx.x + blockIdx.x * blockDim.x;
+
+if (r < nrows) {
+    float val = 0.0f;
+    unsigned int sec = 0;
+
+    while (jds_col_t_ptr[sec + 1] - jds_col_t_ptr[sec] > r) {
+        val += data[jds_col_t_ptr[sec] + r] * input_vector[cols[jds_col_t_ptr[sec] + r]];
+        sec++;
+    }
+
+    out[jds_row_permutations_t[r]] = val;
+}
+```
+- Has good memory coalescing & reduced control divergence.
+- In general JDS is best for roughly triangular matrices. 
+
 = Transformers
 Note: This section is for the GPT project - this is less relevant for the CNN project. 
 This also isn't an AI class per se, but some of these topics are fair game for demo questions. *(update: nevermind! this is apparently fair game for MT2 as well, FML!)*
