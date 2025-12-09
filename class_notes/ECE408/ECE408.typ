@@ -697,6 +697,30 @@ if (r < nrows) {
 - Has good memory coalescing & reduced control divergence.
 - In general JDS is best for roughly triangular matrices. 
 
+== GPU Architecture, cont.
+- *PCI* - Peripheral Component Interconnect, originally 33 Mhz (slow), 32-bit wide, used memory-mapped I/O
+- *PCIe* - switched, point-to-point connection. Each gen of PCIe doubles bandwidth and power efficiency. 
+- First gen. of PCIe had bandwidth of 2 GT/s
+- Uses bit encoding scheme (8b/10b in PCIe 1, 128b/130 in PCIe3)
+- Data is transfered over PCIe via a DMA (Direct-Memory Access), needs physical address for source and destination. *Needs pinned memory*
+- If memory is pageable, OS could page out data being R/W to #sym.arrow page fault happens #sym.arrow CPU takes time to page in the data (slow because you're reading from SSD/Disk).
+- NVLink - GPU-to-GPU interconnect with a higher bandwith than PCIe.
+
+=== Guest Lecture, Tensor Cores 
+- Specialized hardware unit specifically built for matrix-multiplication operations (AB + C)
+- Each thread loads 2 values from shared memory to register file, routed to ALU (multiplier/adders) by a hardware routing unit. 
+- wmma exists for using these tensor cores
+- multiple reasons for increasing performance for inferencing: smaller representations, complex instructions, model efficiency, shrinking process nodes, etc. 
+- Google TPUs have similar hardware (matmul-specific hardware, interfacing with systolic array data setup)
+- Intel AMX allows cuda-like instructions in x86 processors. 
+
+=== Dynamic Parallelism
+- idk if this really falls within the category of gpu architecture, but idc 
+- Dynamic Parallelism refers to being able to launch a kernel from within another kernel
+- useful for load balancing, recursion, library calls
+- Syntax: ```c kernel<<<dimGrid, dimBlock, Ns, S>>>([args]);```, where Ns is the amount of shared memory per thread block for this call, S is the associated ```c cudaStream_t``` object.
+- Allows for non-uniform workloads, helps avoid kernel launch overheads
+
 = Transformers
 Note: This section is for the GPT project - this is less relevant for the CNN project. 
 This also isn't an AI class per se, but some of these topics are fair game for demo questions. *(update: nevermind! this is apparently fair game for MT2 as well, FML!)*
@@ -765,11 +789,23 @@ $
 
 where $Phi(x)$ is the CDF of the Gaussian Distribution. When implemented, we use an approximation to minimize compute resources.
 
-=== Residual Correction
-#list(
-    [Adds the input to the output of a sub-layer (FFN, self-attention, etc.)],
-    [When implemented in CUDA it reduces down to a vec-add kernel (trivial).],
-    [Helps preserve information & prevents issues with vaninishing gradients during backprop]
-)
+*Other components are relatively straightforward*
 
-=== Layer Normalization
+=== (Brief) Overview of Noteable Optimizations
+- ```c __restrict__ ``` - compiler doesn't know if pointers alias or not, so it needs to be conservative (leading to potentially redundant load/stores). 
+- ex: 
+```c 
+// compiler will do 4 loads here. If we use __restrict__, it will optimize this down to like 2
+C[i] = A[i] * B[i];
+C[i] += A[i] * B[i];
+```
+- Joint Register and Shared Memory Tiling - registers have lower latency than shared memory, more efficient memory access pattern
+- cuBLAS/Tensor Cores - both optimizations use tensor cores so I'll group them together.
+- Reduction trees for Softmax - softmax() uses the max operation which is associative and commutative, so you can use reduction trees to optimize this.
+- Flash Attention - Tiles across Q/K/V, the full matrix is never fully computed/materialized (which is where majority of the performance increase comes from as opposed to shared memory tiling), also eliminates some kernel launch overhead. 
+- Local Attention - Smaller window of nearby tokens, less computational complexity, but result isnt as good. 
+- Split-K - parallelizing matmul operations by splitting it along the K dimension, leads to better hardeware utilization. 
+- KV-Cache - avoid redundant computations by cacheing the result of each token, reuse it for subsequent tokens in a sequence. 
+
+
+...and thats all for ECE 408.
