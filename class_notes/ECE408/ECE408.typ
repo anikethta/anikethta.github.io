@@ -714,6 +714,30 @@ if (r < nrows) {
 - Google TPUs have similar hardware (matmul-specific hardware, interfacing with systolic array data setup)
 - Intel AMX allows cuda-like instructions in x86 processors. 
 
+=== Cuda Streams
+- Similar-ish to pipelining, method of achieving concurrency by hardware utilization. E.g. execute kernel whilst doing cudaMemcpy between device and host. 
+- Each stream is a queue of kernel launches/memcpys (instruction queue). Multiple streams require multiple instruction queues. 
+- ex:
+
+```c 
+cudaStream_t stream0, stream1;
+cudaStreamCreate(&stream0);
+cudaStreamCreate(&stream1);
+float *A0, *B0, *C0, *A1, *B1, *C1; 
+
+// handle cudaMalloc
+cudaMemcpyAsync(A0, h_A0, ..., stream0); // this pattern allows for better concurrency/overlap in execution
+cudaMemcpyAsync(B0, h_B0, ..., stream0);
+cudaMemcpyAsync(A1, h_A0, ..., stream1);
+cudaMemcpyAsync(B1, h_B0, ..., stream1);
+
+vecAdd<<<gridDim, blockDim, 0, stream0>>>(A0, B0, ...);
+vecAdd<<<gridDim, blockDim, 0, stream1>>>(A1, B1, ...);
+
+cudaMemcpyAsync(C0, h_C0, ..., stream0);
+cudaMemcpyAsync(C1, h_C1, ..., stream1);
+```
+
 === Dynamic Parallelism
 - idk if this really falls within the category of gpu architecture, but idc 
 - Dynamic Parallelism refers to being able to launch a kernel from within another kernel

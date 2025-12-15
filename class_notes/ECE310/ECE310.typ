@@ -372,6 +372,91 @@ If the number of full cycles is not an integer, we will have a periodic disconti
 Challenges to Spectral Analysis
 - If frequency components are to close together, we may not be able to distinguish them -> we need higher resolution
 - If amplitudes vary greatly, you could have a sidelobe of one component mask the mainlobe of another, smaller frequency component. 
+
 = Final
 
-Will update this when midterm 3 rolls around :D
+== FFT (Fast Fourier Transform)
+- Important (obviously for FT), but other indirect applications of FT, like fast convolution.
+- Motivation: Naive N-point DFT is $O(N^2)$. Example:
+
+```python
+for i in range(0, N):
+    for j in range(0, N):
+        x[i] += x[j] * np.exp(-2 * pi * k * n * 1j/ N)
+```
+
+- FFT is $O(N log N)$, uses divide-and-conquer, first breaking it down to a small unit, and then recombining on the way up to recover the DFT.
+- We break the signal down into even and odd index components, keep on doing this repeatedly.
+- Quick derivation of FFT recombination:
+$ X[k] = sum_(n = 0)^(N - 1) x[n] W_N^(-k n)$ by definition of DFT. We break this up as:
+$ 
+X[k] = sum_(n = 0)^(N/2 - 1) x[2n] W_N^(-k 2n) + sum_(n = 0)^(N/2 - 1) x[2n + 1] W_N^(-k (2n + 1))
+$
+
+We can define $a[n] = x[2n]$ and $b[n] = x[2n + 1]$. We can also make the simplification $W_N^(-2 k n) = exp(j times 2 pi times (-k n/(N/2))) = W_(N/2)^(-k n)$.
+Thus, we can simplify the above expression as:
+
+$
+X[k] = sum_(n = 0)^(N/2 - 1) a[n] W_(N/2)^(-k n) + (sum_(n = 0)^(N/2 - 1) b[n] W_(N/2)^(-k n)) W_N^(-k) \
+= A[k] + W_N^(-k) B[k]
+$
+
+Notably, this only covers the first half of $X[k]$, to find the recombination formula for this upper half, we shift everything by $N/2$. However, $A, B$ are $N/2$-periodic, so the equation reduces to:
+$X_"upper" [k] = A[k] - W_N^(-k) B[k]$.
+
+- There are many graph representation of FFT, like the radix 2 "Butterfly" diagram.
+
+=== Circular Convolution
+- Direct application of FFT--fast convolution.
+- Circular convolution definition: $y[n] = sum_(n = 0)^(N - 1) h[m] x[angle.l k - m angle.r_N]$
+- Circular convolution in time domain corresponds with multiplication in the N-point DFT domain. 
+- Thus, instead of performing circular convolution, we can compute two FFTs, multiply them, and then take the inverse FFT. 
+- However, we must resolve the artifacts of N-periodicity in the DFT. Thus, we zero pad *both* our signals to the same length $N + K - 1$. 
+
+== Filter Design 
+- Ideal Filters are not realistic to implement. These ideal filters consist of rect functions in the frequency domain, which implies sinc functions in the time domain. 
+- However, sinc functions are:
+    - non causal
+    - infinite length
+    - not BIBO-stable
+- Solution, truncate the sinc function. Ex: $h_"LPF" [n] = omega_c/pi sinc(omega_c n), n in {0, 1, ..., N-1}$
+
+- Group delay: $tau_("gd") = -frac(d, d omega) angle H_d (omega)$.
+- Linear phase #sym.arrow uniform group delay #sym.arrow all frequencies get delayed by the same amount
+
+=== Linear Phase Filter Types
+- Type 1 - even symmetric around some point, odd length. Could be any canonical filter type.
+- Type 2 - even symmetric around some point, even length. Could be LP or BP 
+- Type 3 - odd (anti) symmetric around some point, odd length. Could be BP.
+- Type 4 - odd symmetric around some point, even length. Could be BP or HP. 
+
+=== Linear Phase versus Generalized Linear Phase
+- Linear Phase: $angle H_d (omega) = - alpha omega$
+- Generalized Linear Phase: $angle H_d (omega) = - alpha omega + beta(omega)$ where $beta(omega)$ only adds $plus.minus pi$ phase shifts whenever the amplitude becomes negative.
+
+== Upsampling/Downsampling
+
+=== Downsampling
+- You're taking the $D$'th sample of the original signal (think of it as sampling twice). Your sampling period is then $D$ times that of the original signal. 
+- Downsampling by a factor of $D$ yields the DTFT:
+$
+Y_d(omega) = frac(1, D) sum_(k = 0)^(D - 1) X_d(frac(omega - 2 pi k, D))
+$
+- In the DTFT domain, downsampling stretches out values by a factor of $D$. Thus, we need to be careful about aliasing. 
+- Ideally, we apply some anti-aliasing filter $omega_c = pi/D$ *before* downsampling. 
+
+=== Upsampling
+- Take more samples of the original signal by adding $U - 1$ zeros after each sample
+- Period of upsampled signal decreases by factor of $U$
+- In the DTFT domain, $Y_d(omega) = X_d(U omega)$. Much cleaner than downsampling, no amplitude changes.
+- Upsampling brings aliases closer together, potentially within the $[-pi, pi]$ range. Thus, we need an interpolation filter.
+- Interpolation filter is basically a LPF with $omega_c = pi/U$. this filter gets applied *after* upsampling. 
+
+=== Rate Conversion by Non-Integer values
+- You can accomplish this by both upsampling and downsampling (and using their respective filters, of course)
+- Upsample first! Think of this as a data loss question, you're gonna lose more data downsampling first and interpolating compared to vice versa.
+
+== Practical ADC/DAC, Zero-Order Holds (ZOH)
+- sinc interpolation isn't the most feasible for real-time systems, we need something simpler #sym.arrow zero-order hold (interpolation using a 0-order polynomial)
+- when doing D/A, the compensation filter will not be ideal, and so we can upsample to increase the allocated bandwidth for the filter, which in terms allows a more accurate filter shape within passband.
+- Reconstruction Filter Transition Bandwidth: $frac(2pi, T) (U - 1)$. Larger U means reconstruction filter becomes easier to implement with analog circuitry (and so we wrap back to ECE 210).
