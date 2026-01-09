@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<!-- Page setup -->
+<meta charset="utf-8">
+<title>some boards I made for eco</title>
+<meta name="description" content="Project details">
+<meta name="author" content="Aniketh Tarikonda">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<!-- Stylesheets -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css" />
+<!-- Custom styles -->
+<link href="../style.css" rel="stylesheet" type="text/css" />
+<style>
+  .back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 2.0rem;
+  }
+  
+  .project-meta {
+    color: #cfd2da;
+    margin-bottom: 30px;
+    font-style: italic;
+  }
+  
+  .project-image {
+    width: 80%;
+    max-width: 80%;
+    height: auto;
+    margin: 20px 0;
+    border: 1px solid #444;
+    border-radius: 4px;
+  }
+  
+  .image-caption {
+    text-align: left;
+    color: #cfd2da;
+    font-size: 1.3rem;
+    margin-top: -10px;
+    margin-bottom: 30px;
+    font-style: italic;
+  }
+  
+  .project-section {
+    margin: 30px 0;
+  }
+  
+  .project-section h2 {
+    margin-top: 40px;
+    margin-bottom: 15px;
+  }
+</style>
+</head>
+<body>
+<header id="header">
+<a href="../index.html#projects" class="back-link">← Back to Projects</a>
+</header>
+<div id="content">
+    <p>
+      I'm an electrical lead for <a href="https://ecoillini.mechse.illinois.edu/">eco illini</a>, the premier supermileage RSO at UIUC, and here are some boards I developed:
+    </p>
+  
+  <img src="eco_board_images/bms.png" alt="e7 BMS board" class="project-image">
+  <div class="image-caption">e7 BMS board</div>
+  
+  <div class="project-section">
+    <h4>quick description</h4>
+    <p>
+      (As of fall 2025) this is our latest generation BMS (battery management system) board. It's built around the BQ7965x family of battery monitor/balancer ICs from TI, with breakouts for (up to) 10 cells and 4 external thermistors.
+      It also has an STM32G0B1 microcontroller, which is used for communication via CAN FD. Lastly, it serves as the CAN head, providing a clean 5V reference given a 12V input.
+    </p>
+  </div>
+  
+  <img src="eco_board_images/pdu.png" alt="e7 PDU board" class="project-image">
+  <div class="image-caption">e7 PDU board</div>
+  
+  <div class="project-section">
+    <h4>quick description</h4>
+    <p>
+      (As of spring 2026) this is our latest generation PDU (power distribution unit) board. It's built around a buck conversion circuit and a DC-DC isolator, which provides clean 12V power to all boards in the vehicle. It also contains the INA228 energy monitor IC (from TI) and an STM32G0B1 microcontroller, to monitor power consumption statistics and broadcast them through a CAN FD interface.
+    </p>
+</div>
+
+<footer>  
+</footer>
+</body>
+</html>
