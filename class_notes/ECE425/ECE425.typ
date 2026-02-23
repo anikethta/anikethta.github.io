@@ -182,6 +182,15 @@ pagebreak()
         - Avoid multiple metal layers, if possible (leave room for routing)
         - Don't forget metal-poly, metal-metal, metal-diffusion contacts
 
+        *Standard Cells*
+            - Create basic, uniform "building blocks" (NAND, NOR, MUX, DFF, etc.). Lay them out on parallel $V_"DD"$ and GND rails, and then route connections between them.
+
+            - Standard Cells vs. Manual Layout
+                - Standard Cells are pre-verified and characterized, allowing them to be used for fast physical design flows using automated synthesis and PnR tools.
+                    - Cells are fixed, cannot tweak them to squeeze out better PPA.
+                - Manual Layout allows more potential for optimization, but is a lot more painful.
+                    - You only want to manually lay out components of your design that require high performance (ex: ALU)
+
     === Common Combinational and Sequential Circuit Elements
 
     - Most are self-explanatory, really basic
@@ -211,6 +220,15 @@ pagebreak()
 
     - Back-to-Back DFFs can malfunction due to clock skew, race conditions 
         - Thus, we can insert buffers/gates to add some combinational delay between the DFFs #footnote[Don't overdo this or we end up with setup time failures]
+
+    *Quick Note on Sizing*
+        - Transistor network should be sized for equivalent PUN and PDN resistance.
+            - Because of different electron/hole mobilities, pMOS should be sized at 2-3x (for ECE425 its 2x) that of an equivalent nMOS.
+
+        - ALl Paths to the output should have equivalent resistance of $R$ or lower.
+            - Two unit transistors in series have resistance $2R$
+                - To ensure equivalent resistance of $R$, size the gates of both of these transistors at $2x$ the regular amount.
+            - Two unit transistors in parallel have resistance $R$ #footnote[You need to consider worse case scenarios where only *one* of the parallel transistors is on at a time]
 
 == MOS Transistor Theory
     - Naming: "Source" of a MOSFET is the source of majority charge carriers (electrons in nMOS, holes in pMOS)
@@ -323,3 +341,24 @@ pagebreak()
             - "Typical Assumption" is in the middle of these two.
             - We need to ensure our design works for all of these assumptions
             - *Process Corners* are a way of graphically representing this parameter variation
+    === DC Transfer Characteristics of the Inverter
+        - Overview: We can derive the current through both the nMOS and pMOS in series, in the inverter configuration. By KCL, the sum of these currents at the output node is $0 A$.
+            - We solve this KCL analytically. In the linear region, the current is a function of $V_"ds"$, where $V_d$ is equal to $V_"out"$
+            - We can also solve this graphically, finding the intersection of the nMOS and pMOS curve (the pMOS curve needs to be shifted and reflected across x-axis)
+        - There are five regions of operation for the CMOS inverter.
+        - The ratio of $beta_p/beta_n$ affects the shape of the DC transfer curve.
+            - Called "skewed" when $beta_p/beta_n != 1$
+
+        - *Noise Margins*: how much noise can a gate take before it stops producing proper outputs. 
+            - The ranges which define the noise margin are generally defined at the unity gain points of the DC transfer curve (aka when the slope of the curve is $-1$)
+            - Anything within the range is called an "acceptable" $1$ or $0$.
+        - Because the CMOS inverter is a restoring gate, it converts an "acceptable" input into a strong/clean $0$ or $1$
+
+        - Beware of using pass transistors in series
+            - pass transistors may be acceptable for driving restoring gates, but not for other pass transistors.
+    
+    === Timing and Delay
+        - All of the previous functions assume inputs/outputs instantaneously reach steady-state. In reality, $V_"in"$ and $V_"out"$ are functions of time. 
+        - MOSFET gates act as a parallel plate capacitor, and so charges need to accumulate at the gate in order to switch it ON/OFF.
+            - Also takes time to discharge
+        - If you have a gate output with high fanout (driving many different input gates), the overall capacitance increases #sym.arrow time to charge/discharge increases #sym.arrow delay increases
