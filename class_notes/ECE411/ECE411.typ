@@ -90,18 +90,31 @@
   - used in DSPs today
 
 - Dataflow Architecture - less "sequential", instructions are sent for execution the moment their operands are ready. 
-  - while a strict dataflow archicture isn't commonly used today, it rears its head through dynamic scheduling/out-of-ordered execution.
+  - while a strict dataflow architecture isn't commonly used today, it rears its head through dynamic scheduling/out-of-ordered execution.
+  - requires a different programming paradigm - more graphical programs, with operations being the nodes
+
 
 - A typical CPU follows Fetch #sym.arrow Decode #sym.arrow Execute #sym.arrow Memory #sym.arrow Writeback 
 
 *Instruction Set Architecture (ISA)* - the contract/interface between hardware and software
-- A good ISA is portable, general, proivides convenient functionality to higher levels, allows an efficient implementation in lower levels
-- Gray areas exist, x86 is so dominant that it can get around nightmare-ish decode logic. Legacy ISAs still exist because the cost of migrating to newer ISAs outweights the benefits.
-- Using a licensed ISA is often expensive (cough cough arm), but often more commercially viable than using custom ISAs. 
+  - A good ISA is portable, general, provides convenient functionality to higher levels, allows an efficient implementation in lower levels
+  - Semantic Gap: How close are instructions, data types, addressing modes to the high-level language?
+    - Who is the burden being placed upon? The hardware designer or the software designer? 
+    - You can somewhat "virtualize" ISA - having separate ISAs for the hardware and software, and a translator between the two. Ex: Rosetta on Apple Silicon
+  - Gray areas exist, x86 is so dominant that it can get around nightmare-ish decode logic. Legacy ISAs still exist because the cost of migrating to newer ISAs outweights the benefits.
+  - Using a licensed ISA is often expensive (cough cough arm), but often more commercially viable than using custom ISAs. 
 
-- RISC vs CISC - RISC allows for simpler hardware implementations (generally), CISC can have better code density. 
+  - RISC vs CISC - RISC allows for simpler hardware implementations (generally), CISC can have better code density. 
 
-- ISAs don't have to be strictly register-register (although register-register is pretty much exclusively used today)--you can have accumulator/stack-based architectures. 
+  - ISAs don't have to be strictly register-register (although register-register is pretty much exclusively used today)--you can have accumulator/stack-based architectures.
+
+  - Number of (Architectural) Registers is entirely dependent on ISA
+    - More registers allow better register allocation, less compiler tricks, fewer saves/restores
+    - More registers means larger instruction size, and larger area penalties
+  
+- Indirection: We can do a lot of funky stuff at the hardware level, and as long as the interface (ISA) is being upheld, its all good.
+  - Therein lies the difference between ISA and Microarchitecture. 
+  - E.g. ```asm add ``` instruction vs. adder implementation (CLA, CRA, hierarchical, etc.)
 
 Big Endian vs Little Endian
   - Big Endian: MSB at lowest address
@@ -250,6 +263,8 @@ Instruction Cache Considerations
 - Organized in hierarchies (Level 1 to Level 3, usually)
 - Lower level caches are closer to core, have lower associativity, store less data, and have the lowest nominal latency; L2/L3 caches are larger, hold both instructions/program data
   - L2/L3 caches can be 16, 32+ way set associative because we want to minimize *conflict misses*
+  - Serial vs. Parallel Accesses of Cache Levels: We can speculatively access L2/L3 when accessing L1, thus reducing latency on misses. However, this adds unnecessary accesses to next levels on hits.
+  - Over a long time, different caches exploit different memory access patterns
 - In general, instruction cache (icache) access is simpler than data cache (dcache) because of memory disambiguation logic necessary with data cache.
 
 - How do we evaluate latency of these memory systems?
@@ -308,6 +323,7 @@ How do we map back and forth between physical and virtual addresses?
 - *Compulsory Miss*: "cold start miss" - misses due to data not being cached yet.
 - *Capacity Miss*: not enough space in cache to hold data. e.g. L1 cache is 32KB, you cannot physically fit any data structure larger than 32KB.
 - *Conflict Miss*: data in cache misses because it was replaced. e.g. L1 cache is 32KB, you want two arrays of size 1KB to be both be cached, but they map to the same set, and so one replaces the other within the cache. 
+  - *Thrashing* - When frequently used data is consistently evicted #sym.arrow re-loaded into cache. 
 
 *Direct Mapped Cache*
 - A memory value has a single corresponding location in the cache

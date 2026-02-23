@@ -211,3 +211,115 @@ pagebreak()
 
     - Back-to-Back DFFs can malfunction due to clock skew, race conditions 
         - Thus, we can insert buffers/gates to add some combinational delay between the DFFs #footnote[Don't overdo this or we end up with setup time failures]
+
+== MOS Transistor Theory
+    - Naming: "Source" of a MOSFET is the source of majority charge carriers (electrons in nMOS, holes in pMOS)
+    - Three operation modes: Accumulation, Depletion, inversion
+        - Accumulation: $V_g - V_b < 0$
+        - Depletion: $0 < V_g - V_b < V_t$
+        - Inversion: $V_g - V_b > V_t$ 
+    - Three Regions in the Shockley (wild ass wiki article btw) Model: Cutoff, Linear, Saturation
+
+    - When $V_"gs" < V_t$, the device is in cutoff (no channel forms)
+    - Channel forms when $V_g$ exceeds channel voltage $V_c$ by at least $V_t$
+        - $V_c approx V_s$ near source, $V_"gs" = V_g - V_s > V_t$, and so the n-channel forms
+        - Near the drain, $V_c approx V_d$, and so $V_"gd" = V_"gs" - V_"ds" < V_t$, and so the n-channel is pinched off
+
+    - In saturation $V_"ds" > V_"ov"$, current will still flow, but theres no dependence on $V_"ds"$ #footnote[$V_"ov"$ is the overdrive voltage, defined as $V_"gs" - V_t$ in nMOS (or $V_"sg" - |V_t|$ in pMOS)]
+
+    *Deriving the Ideal MOSFET Equation(s)*
+        - Overview: MOS structure is effectively a parallel plate capacitor (important thing to keep in mind for later discussions on timing/delay)
+        - How can we derive the amount of charge in the channel, and how long each charge takes to cross it?
+
+        - Capacitor Eqn: $Q_"charge" = C_g V$ where $C_g$ is the gate capacitance which we can derive using the parallel plate capacitor eqn:
+        - $C_g = epsilon_"ox" frac(W L, t_"ox") = C_"ox" W L$. \
+            - $epsilon_"ox"$ is the permittivity of the gate oxide, $t_"ox"$ is the gate thickness, $W L$ is the area (width times length)
+        - Gate voltage $V = (V_g - V_c) - V_t$. 
+            - We can use the approximation $V_c approx frac(V_s + V_d, 2)$ to simplify this to $V = (V_"gs" - V_"ds"/2) - V_t$
+
+        - With the gate voltage/capacitance, we can approximate the charge that forms under the gate. However, $I = frac(Delta Q, Delta t)$, so we also need to derive this $Delta t$.
+
+        - Electric Field (lateral) is $E = frac(V_"ds", L)$ where $L$ is channel length. We also know $v_"electron" = mu E$ where $mu$ is electron mobility.
+            - time required for an electron to cross the channel is $t = L/v_"electron"$
+            - $Delta t = L/v = frac(L^2, mu V_"ds")$
+            
+        - With these two components, we can now derive the MOSFET IV-equation for an nMOS in the linear region (Shockley model)
+            - $ I_"ds" = mu C_"ox" (W/L) (V_"ov" V_"ds" - 1/2 V_"ds"^2) $
+        - To calculate the current at saturation, we plug in $V_"ds" = V_"ov"$, at which point we get:
+            - $I_"ds" = 1/2 mu C_"ox" (W/L) (V_"ov"^2)$
+
+    - How do we increase $I_"ds"$?
+        - Increase amount of charge in the channel
+            - Increase $t_"ox"$ (not in your control)
+            - Increase $L$ (bad idea, charges have to cross a longer distance)
+            - Increase transistor width $W$ (this is a good idea)
+            - Increase gate voltage (also a good idea, *although there are caveats*)
+        - Decrease time to cross channel
+            - Decrease $L$ (this is intrinsically limited by your minimum feature size)
+            - Increase $V_d$/$V_"ds"$
+
+    === Non-Ideal Effects
+        - There are two E-fields in a MOSFET
+            - a vertical one $E_"vert" = V_"gs"/t_"ox"$ 
+            - a lateral one $E_"lat" = V_"ds"/L$
+
+        - Electrons are attracted upwards due to $E_"vert"$, directed them right towards the gate oxide
+            - They collide/scatter off of the substrate-oxide interface, degrading velocity (lowering mobility)
+            - Increase total drain-to-source path
+
+        - To account for $E_"vert"$, we introduce $mu_"eff" < mu_e$
+            - $mu_"eff"$ is determined by best-fitting experimental data.
+            - $E_c = 2v_"sat"/mu_"eff"$
+         $ v = cases(frac(mu_"eff" E, (1 + E/E_c)) &quad E < E_c , 1 &quad E >= E_c) $
+
+        *Channel Length Modulation*
+            - A reversed-biased PN-junction forms a depletion region
+                - Width of depletion region $L_d$ grows when when we further reverse-bias it
+            - Thus, the channel length is actually smaller when we take this into account:
+                - $L_"eff" = L - L_d$, shorter $L_"eff"$ means higher current
+                - Increasing $V_"ds"$ past saturation grows the depletion region, thus increasing $L_d$, thus resulting in a shorter $L_"eff"$, which results in a higher current.
+
+            - To account for this, we add a term to the saturation equation to linearly approximate this contribution:
+            $ I_"ds" = 1/2 mu C_"ox" (W/L) (V_"ov")^2 (1 + lambda V_"ds") $
+
+        *Threshold Voltage Effects*
+            - Depends on body voltage, drain voltage, channel length 
+            - intrinsically depends on material, doping concentration, oxide geometry, temperature, etc.
+            - Body Effect: $V_t = V_"t0" + gamma (sqrt(phi_s + V_"sb") - sqrt(phi_s))$
+                - $gamma$ is the body coefficient, $phi_s$ is the fermi Potential.
+            - Drain-Induced Barrier Lowering (DIBL)
+                - high $V_d$ creates a large depletion region
+                - depletion region spills over to the channel
+                - easier for gate to create inversion layer in the channel
+                - Another linear approximation: $V_"t'" = V_t - eta V_"ds"$ (threshold voltage decreases)
+
+        *Leakage Currents*
+            - *Subthreshold Leakage*: Current flowing from source to drain when in cutoff
+                - Caused by weak inversion layers, short-channel effects, thermal agitation
+                - The primary leakage concern for lowly students in ECE425
+            
+            $ I_"ds" = I_"ds0" exp[ (V_(g s) - V_(t 0) + eta V_(d s) - k_gamma V_(s b)) / (n v_T) ] (1 - exp[ (-V_(d s)) / v_T ]) $
+
+            $ I_"ds0" = beta v_T^2 exp[1.8] $
+
+            - Gate Leakage: current flowing between gate and body
+                - Charges can quantum tunnel through the gate oxide
+            
+            - Junction Leakage: current flowing between source and body, drain and body
+                - Diode Leakage: fast/heated electrons can cross the depletion region
+                - Band-To-Band Tunnel (BTBT): electrons can tunnel through the PN-junction.
+                - gate-induced drain leakage (GIDL): high $V_d$, low $V_g$ causes pronounced BTBTn beneath gate overlap 
+
+        Temperature Effects
+            - Higher temperature causes reduced mobility, lower $V_t$
+            - Electrons now have more energy and are more likely to tunnel
+            - Exacerbates most of the other non-ideal effects
+            - This is why you should keep your chips relatively cool (or at least be smart with packaging)
+
+        *Parameter Variation*
+            - We can't expect transistors to behave ideally
+            - "Fast Assumption" : $L_"eff"$ is short, $V_t$ is low, $t_"ox"$ is thin.
+            - "Slow Assumption" : $L_"eff"$ is long, $V_t$ is high, $t_"ox"$ is thick.
+            - "Typical Assumption" is in the middle of these two.
+            - We need to ensure our design works for all of these assumptions
+            - *Process Corners* are a way of graphically representing this parameter variation
