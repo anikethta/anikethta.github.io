@@ -132,7 +132,6 @@
       \resumeItemListStart
         \resumeItem{Built a ResearchCopilot prototype with a real-time conversational pipeline integrating automatic speech recognition (ASR) and analytics to surface insights dynamically.}
         \resumeItem{Improved document parsing accuracy by integrating LandingAI Agentic Document Extraction (ADE) APIs for structured data extraction.}
-        \resumeItem{Developed a text-to-image generation feature using ChatGPT image APIs, converting natural language prompts into visuals.}
       \resumeItemListEnd
 
   \resumeSubHeadingListEnd
@@ -141,17 +140,23 @@
 \section{Projects}
     \resumeSubHeadingListStart
       \resumeProjectHeading
-          {\href{https://anikethta.com/project_files/ece385_final_report.pdf}{FPGA Flight Simulator with 3D Rendering}}{}
+          {{Superscalar Out-of-Order RISC-V Processor}}{Mar. 2026 - Ongoing}
+          \resumeItemListStart
+            \resumeItem{Designing a superscalar out-of-order processor implementing the RV32IM ISA, based on an explicit register renaming (ERR) architecture to enable high instruction-level parallelism.}
+            \resumeItem{Developing core memory and speculative execution subsystems, including a non-blocking 4-way set-associative L1 data cache, 2-way L1 instruction cache, and a gshare branch predictor.}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\href{https://anikethta.com/project_files/ece385_final_report.pdf}{FPGA Flight Simulator with 3D Rendering}}{Nov. 2025 - Dec. 2025}
           \resumeItemListStart
             \resumeItem{Designed and implemented a hardware-accelerated flight simulator on the RealDigital Urbana board using SystemVerilog, featuring a custom graphics pipeline, DDR3 SDRAM interfaces, and real-time 3D graphics rendering to a HDMI display.}
             \resumeItem{Developed a MicroBlaze-driven control subsystem to process keyboard inputs and transmit object data to the hardware GPU pipeline over GPIO interface(s).}
           \resumeItemListEnd
       \resumeProjectHeading
-          {GPT-2 Transformer Model Implementation}{}
+          {GPT-2 Transformer Model Implementation}{Oct. 2025 - Nov. 2025}
           \resumeItemListStart
-            \resumeItem{Implemented core components of the GPT-2 transformer model in CUDA—including the attention mechanism, encoder layers, and layer normalization—optimized for GPU parallelism.}
+            \resumeItem{Implemented core components of the GPT-2 transformer model in CUDA, and leveraged Nsight Compute for kernel-level profiling.}
             \resumeItem{Implemented optimizations to improve inferencing performance, including but not limited to KV-caching, reduction trees, and leveraging tensor-core-accelerated matrix operations.}
-            \resumeItem{Deployed a custom GPT-2 inference pipeline on NCSA's Delta HPC cluster, leveraging NVIDIA Nsight Compute and Nsight Systems for kernel and system-level profiling, respectively.}
+            %\resumeItem{Deployed a custom GPT-2 inference pipeline on NCSA's Delta HPC cluster, leveraging NVIDIA Nsight Compute and Nsight Systems for kernel and system-level profiling, respectively.}
           \resumeItemListEnd
     \resumeSubHeadingListEnd
 
