@@ -527,3 +527,81 @@
         - Temperature: operating temperature (environmental)
     - Designers need to account for these when modeling their chip.
     
+    - *Process Variations*
+        - Categories: Lot-to-lot, wafer-to-wafer, die-to-die, within-die
+        - Causes: 
+            - Systematic: spatially correlated (issues with lithographic lenses)
+            - Random: spatially uncorrelated (e.g. dopant fluctuations)
+        - Affected parameters:
+            - Threshold voltage $V_t$
+            - $L_"eff"$ (effective channel length)
+        - Process Corners
+        - Statistical Models, usually done by the process manufacturer. 
+        - EDA tools can allow you to model various timing-related uncertainties due to process variation 
+            - e.g. Innovus has options for scaled on-chip variations
+        - A failure is a deviation from the expected behavior of a system
+            - failures are caused by faults, but not all faults lead to observable errors
+            - some faults don't propagate that far
+            - bathtub curve for failure rates 
+        
+    - *Silicon Aging*
+        - Processors can generally last 7-12 years before age-related failures
+            - Negative Bias Temperature Instability: trap formation in gate-oxide and silicon interface at channel of the pMOS, will cause the $V_t$ to gradually increase.
+            - Hot Carrier Injection: "hot" electrons are stuck in gate oxide, also ends up increasing $V_t$
+            - Time-dependent Dielectric Breakdown - Electric field at gate oxide increases leakage over time.
+        - Thus, some possible workarounds include:
+            - Setting $V_"dd"$ a bit higher to account for variation.
+            - Setting frequency lower to widen timing margins.
+            - Fault Tolerance/Redundancy
+    
+    - *DFT*: Design for Test
+        - Adding features to make the chip easier to test after its been taped out.
+        - Automated in EDA tools today. e.g. Synopsys DFT compiler.
+
+        - *Scanning*
+            - Extra registers around comb. logic, behaving like shift registers.
+            - Directly-addressable registers, allowing for *parallel scan*
+            - Boundary scan (as seen with JTAG) which scans top-level I/O.
+            - Built-in Self-test (*BIST*), generating test stimuli and running diagnostics internally.
+                - non-trivial (tbh none of these are), requires internal storage.
+
+== Boolean Algebra
+    - *Shannon Expansion*: $f = x dot f_x + x' dot f_(x')$ 
+    - *Boolean Difference (Derivative)*: $partial f / partial x = f_x plus.circle f_(x')$ 
+        - Indicates sensitivity of function $f$ to variable $x$ 
+    - *Consensus*: $C_x = f_x dot f_(x')$ 
+        - Minterms where $f=1$ regardless of $x$ 
+    - *Smoothing*: $S_x = f_x + f_(x')$ 
+        - Existence of a value for $x$ such that $f=1$ 
+
+== Binary Decision Diagrams (BDD)
+    - *OBDD*: Ordered Binary Decision Diagram; fixed variable ordering from root to leaf 
+    - *ROBDD*: Reduced OBDD; canonical representation achieved via reduction rules 
+        - *Terminal Merging*: Combine all identical "0" leaves and "1" leaves 
+        - *Isomorphic Merging*: Combine nodes of same variable with identical children 
+        - *Redundancy Elimination*: Delete node if left edge and right edge point to same child 
+
+== HLS & Scheduling
+    - *Unconstrained Scheduling* - *ASAP*: As Soon As Possible; schedule nodes at earliest valid cycle 
+        - *ALAP*: As Late As Possible; schedule at latest cycle without increasing latency 
+        - *Mobility*: $M_i = "ALAP"_i - "ASAP"_i$; nodes with $M=0$ are on critical path 
+    - *Resource-Constrained Scheduling* - *List Scheduling*: Prioritize nodes based on a priority function (e.g., lowest mobility) 
+        - *Multi-cycle Ops*: Resources marked "Busy" during execution (e.g., mult = 2 cycles) 
+
+== Routing Algorithms
+    - *Maze Routing (BFS)*: Explores grid in waves; guarantees the shortest path 
+    - *A-star Search*: Priority-based search using cost function $f(n) = g(n) + h(n)$ 
+        - $g(n)$: Distance traveled from source 
+        - $h(n)$: Estimated Manhattan distance to target 
+    - *Haddock's Algorithm*: Use detour number $d(P)$ as the cost function.
+    - *Line-Probe*: Inserts variable-length line segments instead of single grid steps 
+        - Faster than maze routing but not guaranteed to find shortest path 
+
+== Verification & Logic Design
+    - *Verification Limits*: Passing testbenches isn't "bug-free" due to coverage and propagation 
+        - Internal errors might not reach observable top-level outputs 
+    - *Simulation Levels* - *RTL*: High abstraction (HDL); used for functional verification 
+        - *Gate-level*: Low abstraction (netlist); accounts for individual gate delays 
+    - *Wire Congestion*: Fixed by floorplan revision, cell placement, or increased PnR effort 
+    - *Scan Design Architecture* - *Serial*: Chained flip-flops; low area but slow sequential access 
+        - *Parallel*: Individually addressable; fast access but high area overhead

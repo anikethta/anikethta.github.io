@@ -6,21 +6,10 @@
     <title>my website</title>
     <meta name="description" content="my main website">
     <meta name="author" content="Aniketh Tarikonda">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-    <!-- Stylesheets -->
-    <!-- Reset default styles and add support for google fonts -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css" />
-   
     <!-- Custom styles -->
     <link href="style.css" rel="stylesheet" type="text/css" />
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>    
-
-    <!-- Want to add Bootstrap? -->
-    <!-- Visit: https://getbootstrap.com/docs/4.3/getting-started/introduction/ -->
     
   </head>
   
@@ -33,8 +22,9 @@
       <ul class="main-menu">
         <li><a href="#home">home/about</a></li>
         <li><a href="#files">files</a></li>
-        <li><a href="#contact">contact</a></li>
         <li><a href="#projects">projects</a></li>
+        <li><a href="#gallery">gallery</a></li>
+        <li><a href="#contact">contact</a></li>
       </ul>                 
     </header>
    
@@ -42,47 +32,66 @@
       <div class="inner">
         <div id="content"> 
           
-          <div id="home" class="content-region hide">
+          <section id="home" class="content-region">
             <h2>Home/About</h2>
             <p>
               Hello! :D - I'm a sophomore studying Computer Engineering at UIUC. My interests revolve around digital design, computer microarchitecture, and signal processing. You can reach me via email (aniketh8 [at] illinois [dot]edu)
             </p>
-          </div>
+          </section>
           
-          <div id="files" class="content-region hide">
+          <section id="files" class="content-region">
             <h2>Files</h2>
-            <p>
-            > <a href="resume/AnikethTarikonda_resume.pdf" target="_blank">My resume</a>  
-             
-             <div>Class Notes:</div>
-            > <a href="class_notes/ECE310/ECE310.pdf" target="_blank">ECE 310 Notes (DSP)</a><br>
-            > <a href="class_notes/ECE408/ECE408.pdf" target="_blank">ECE 408 Notes (Parallel Programming, GPUs, CUDA)</a><br>
-            > <a href="class_notes/ECE411/ECE411.pdf" target="_blank">ECE 411 Notes (Computer Architecture, Design)</a><br> 
-            > <a href="class_notes/ECE425/ECE425.pdf" target="_blank">ECE 425 Notes (VLSI System Design)</a> 
-            </p>
-          </div>
-          
-          <div id="contact" class="content-region hide">
-            <h2>Contact</h2>
-            <p>
-              ><a href="https://www.linkedin.com/in/aniketh-tarikonda-094a66247/"> LinkedIn</a>
-            </p>
-	          <p>
-              ><a href="https://github.com/anikethta"> Github</a> 
-            </p>
-          </div>
+            <ul class="link-list">
+              <li><a href="resume/AnikethTarikonda_resume.pdf" target="_blank" rel="noopener">My resume</a></li>
+            </ul>
 
-          <div id="projects" class="content-region hide">
+            <h3>Class Notes</h3>
+            <ul class="link-list">
+              <li><a href="class_notes/ECE310/ECE310.pdf" target="_blank" rel="noopener">ECE 310 Notes (DSP)</a></li>
+              <li><a href="class_notes/ECE408/ECE408.pdf" target="_blank" rel="noopener">ECE 408 Notes (Parallel Programming, GPUs, CUDA)</a></li>
+              <li><a href="class_notes/ECE411/ECE411.pdf" target="_blank" rel="noopener">ECE 411 Notes (Computer Architecture)</a></li>
+              <li><a href="class_notes/ECE425/ECE425.pdf" target="_blank" rel="noopener">ECE 425 Notes (VLSI System Design)</a></li>
+            </ul>
+          </section>
+
+          <section id="projects" class="content-region">
             <h2>Projects</h2>
-            <p>
-              ><a href="project_files/ece385_final_report.pdf"> my final project for ECE 385 - a 3D renderer/flight simulator</a><br>
-              ><a href="project_files/eco_boards.html"> PCB's that I've developed (or lead development of) for eco illini</a>
-            </p>
-          </div>
+            <ul class="link-list">
+              <li><a href="project_files/ece411_report.pdf">A Superscalar, Out-of-Order RV32IM Processor</a></li>
+              <li><a href="project_files/ece385_final_report.pdf">An FPGA-based 3D renderer/flight simulator</a></li>
+              <li><a href="project_files/eco_boards.html">PCB's that I've developed (or led development of) for Eco Illini</a></li>
+            </ul>
+          </section>
+
+          <section id="gallery" class="content-region">
+            <h2>Gallery</h2>
+            <div class="gallery-grid">
+              <figure class="gallery-item">
+                <img src="gallery/website_background.jpg" width="750" height="593" loading="lazy" decoding="async" alt="Original website background">
+                <figcaption>Original website background--a sunset near Siebel</figcaption>
+              </figure>
+              <figure class="gallery-item">
+                <img src="gallery/IMG_2613.png" width="302" height="403" loading="lazy" decoding="async" alt="Miscellaneous gallery image">
+                <figcaption>way too many hungry squirrels around CU man</figcaption>
+              </figure>
+            </div>
+          </section>
+
+          <section id="contact" class="content-region">
+            <h2>Contact</h2>
+            <ul class="link-list">
+              <li><a href="https://www.linkedin.com/in/aniketh-tarikonda-094a66247/" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://github.com/anikethta" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+          </section>
           
         </div>
       </div>
     </div>
+
+    <button class="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="false">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
 
     <footer>  
 	<!-- Insert Footer Here -->
