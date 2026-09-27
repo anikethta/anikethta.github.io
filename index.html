@@ -1,12 +1,27 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <!-- Page setup -->
     <meta charset="utf-8">
-    <title>my website</title>
-    <meta name="description" content="my main website">
+    <title>Aniketh Tarikonda — Computer Engineering</title>
+    <meta name="description" content="Personal website and portfolio of Aniketh Tarikonda — Computer Engineering student at UIUC.">
     <meta name="author" content="Aniketh Tarikonda">
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="canonical" href="https://anikethta.com" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://anikethta.com" />
+    <meta property="og:title" content="Aniketh Tarikonda — Computer Engineering" />
+    <meta property="og:description" content="Personal website and portfolio of Aniketh Tarikonda — Computer Engineering student at UIUC." />
+    <meta property="og:image" content="https://anikethta.com/gallery/website_background.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content="https://anikethta.com" />
+    <meta property="twitter:title" content="Aniketh Tarikonda — Computer Engineering" />
+    <meta property="twitter:description" content="Personal website and portfolio of Aniketh Tarikonda — Computer Engineering student at UIUC." />
+    <meta property="twitter:image" content="https://anikethta.com/gallery/website_background.jpg" />
 
     <!-- Custom styles -->
     <link href="style.css" rel="stylesheet" type="text/css" />
@@ -15,27 +30,32 @@
   
   <body>
 
+    <a href="#main" class="skip-link">Skip to main content</a>
+
     <header id="header">
       <h1>Aniketh Tarikonda</h1>
       
-      <!-- Menu link fragment #id should match a div id. Example: <a href="#home"> links to <div id="home"></div>  -->
-      <ul class="main-menu">
-        <li><a href="#home">home/about</a></li>
-        <li><a href="#files">files</a></li>
-        <li><a href="#projects">projects</a></li>
-        <li><a href="#gallery">gallery</a></li>
-        <li><a href="#contact">contact</a></li>
-      </ul>                 
+      <nav aria-label="Primary navigation">
+        <ul class="main-menu">
+          <li><a href="#home">home/about</a></li>
+          <li><a href="#files">files</a></li>
+          <li><a href="#projects">projects</a></li>
+          <li><a href="#gallery">gallery</a></li>
+          <li><a href="#contact">contact</a></li>
+        </ul>                 
+      </nav>
     </header>
    
     <div id="container">
       <div class="inner">
         <div id="content"> 
           
+          <main id="main">
+
           <section id="home" class="content-region">
             <h2>Home/About</h2>
             <p>
-              Hello! :D - I'm a sophomore studying Computer Engineering at UIUC. My interests revolve around digital design, computer microarchitecture, and signal processing. You can reach me via email (aniketh8 [at] illinois [dot]edu)
+              Hello! :D - I'm a junior studying Computer Engineering at UIUC. My interests revolve around computer microarchitecture and AI systems. You can reach me via email (aniketh8 [at] illinois [dot]edu)
             </p>
           </section>
           
@@ -48,9 +68,10 @@
             <h3>Class Notes</h3>
             <ul class="link-list">
               <li><a href="class_notes/ECE310/ECE310.pdf" target="_blank" rel="noopener">ECE 310 Notes (DSP)</a></li>
-              <li><a href="class_notes/ECE408/ECE408.pdf" target="_blank" rel="noopener">ECE 408 Notes (Parallel Programming, GPUs, CUDA)</a></li>
+              <li><a href="class_notes/ECE408/ECE408.pdf" target="_blank" rel="noopener">ECE 408 Notes (Parallel Programming)</a></li>
               <li><a href="class_notes/ECE411/ECE411.pdf" target="_blank" rel="noopener">ECE 411 Notes (Computer Architecture)</a></li>
               <li><a href="class_notes/ECE425/ECE425.pdf" target="_blank" rel="noopener">ECE 425 Notes (VLSI System Design)</a></li>
+              <li><a href="class_notes/ECE482/ECE482.pdf" target="_blank" rel="noopener">ECE 482 Notes (Digital IC Design)</a></li>
             </ul>
           </section>
 
@@ -84,7 +105,7 @@
               <li><a href="https://github.com/anikethta" target="_blank" rel="noopener">Github</a></li>
             </ul>
           </section>
-          
+          </main>
         </div>
       </div>
     </div>
@@ -92,10 +113,6 @@
     <button class="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="false">
       <span class="theme-toggle-icon" aria-hidden="true"></span>
     </button>
-
-    <footer>  
-	<!-- Insert Footer Here -->
-    </footer>
     
     <!-- Load additional JS scripts here -->
     <script type="text/javascript" src="script.js"></script>

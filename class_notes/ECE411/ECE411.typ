@@ -689,3 +689,163 @@ Gustafson's Law - You can scale up the size of a parallelizable program with res
   - duplicating register file, multiplexing memory, often times data is transferred from a secondary regfile into a primary regfile for execution.
   - *Coarse-Grained Multithreading (CGMT)*: switches threads on major stalls, fast single-thread speed.
   - *Fine-Grained Multithreading (FGMT)*: switches threads every clock cycle, fast switching between threads.
+
+= Memory Consistency and Cache Coherence
+
+=== Program Order & Memory Consistency
+
+*Weak Ordering*
+  - Divide operations into data operations and synchronization primatives
+  - e.g. fence operations
+    - all memory ops before the fence must complete before fence is executed
+    - all memory ops after the fence must wait for the fence to complete (drains LSQ)
+    - fences are performed in program order
+
+*Release Consistency*
+  - synchronization divided into acquire (lock) and release (unlock)
+  - acquire must complete before all following memory ops
+
+*Sequential Consistency*
+  - imagine a mux/switch which only grants one core to memory at a given time
+  - very good for defining "correctness," but bad from a performance perspective because we cant use non-blocking caches, write-back caches, and aggressive memory re-ordering.
+
+*Weak(er) Consistency*
+  - ordering of operations only important when order effects operations on shared data
+  - fence instructions
+  - allows for higher performance (programmer-specified regions of atomic operations), but added burden on programmer
+
+*Shared Memory Synchronization*
+  - mutexes
+  - point-to-point synchronization (producer-consumer)
+  - rendezvous (barrier synchronization), allows for *bulk synchronous programming*
+
+*Locks*
+  - reliable locking requires atomic read-modify-write instructions
+    - e.g. test & set
+
+  - sub-atomic Locks
+    - use two instructions (load linked + store conditional (LL + SC))
+  
+    - Load Linked:
+      - reads mem. value
+      - sets falling
+      - writes address to special global address register
+
+    - Store Conditional:
+      - writes value if flag is set
+      - no-op if flag is cleared
+      - sets CC indicating success/failure
+
+== Cache Coherence
+
+- coherence is the ordering of operations from different cores to the same memory location whereas consistency is about the ordering of all memory operations
+
+=== Snoopy Bus versus Directory-based
+
+*Snoopy Bus*
+  - single point of serialization for all memory requests
+  - processors observe other processors' R/W
+  - straight-forward to implement, doesn't scale very well though
+
+*Directory-Based*
+  - Single point of serialization per block
+  - processors make explicit requests for a block, directory tracks which caches have each block
+  - locally central directory keeps track of where the copies of each cache block reside. $P$ cores, $P + 1 $ bits for directory
+    - on a read, set cache bit and arrange the supply of data
+    - on a write, invalidate all caches that have the block and reset their bits
+  - exclusive bit = "single source of truth" (producer, effectively)
+
+=== MSI 
+
+- *(M)odified* ~ cacheline is the only cached copy AND dirty
+- *(S)hared* ~ cacheline is one of potentially several cached copies and is clean 
+- *(I)nvalid* ~ cacheline is not present in this cache
+
+Fairly simpled cache coherency scheme, but has a few issues:
+  - a newly fetched block immedietely goes to Shared state, even if its the only shared copy
+  - if a processor writes into this sole copy, it broadcasts an invalidate, even though its unnecessary
+  - not great for cache-to-cache transfers
+
+=== MESI 
+- *(E)xclusive* ~ cacheline is clean, but only I have it.
+- transition from Exclusive or Modified state to shared is called a "downgrade" because it takes away the owner's right to modify data without having to invalidate
+
+Better than MSI, but has a few issues:
+  - downgrades are bad for performance (has to write back to main memory), especially bad if cacheline is getting ping-ponged between multiple processors, each of which are repeatedly downgrading/upgrading
+  - bad for cache-to-cache transfers
+
+=== MOESI
+- *(O)wned* ~ cacheline is dirty and shared, this processor is the sole source of truth for this cacheline.
+  - only a BusWr on Owned will invalidate this cacheline
+
+there are other states you can add to your CC protocol, but it has its tradeoffs with respect to hardware complexity, bandwidth, etc.
+
+*Multi-level Cache Hierarchies*
+  - inclusion property, L2 includes L1. If marked modified/shared in L1, it should also be marked in L2
+  - only need to snoop for L2
+  - L1 should access L2 for misses/block state changes
+  - L2 forwards L1 blocks invalidated/updated by the bus.
+
+= Miscellaneous
+
+== Interconnects
+
+*NoC (Network-on-Chip)*
+  - ad-hoc wiring does not scale
+  - NoCs offer efficient mutliplexing of data packets
+
+*Metrics for Evaluating NoCs*
+
+- Switch Degree - number of links at a node (good proxy for cost)
+- Hop Count - average number of "hops" data needs to travel from one node to another
+- Maximum Channel Load - bandwidth, effectively
+- Bisection Bandwidth - split graph in half, in a uniform NoC, half of traffic should pass Bisection
+  - proxy for cost, global wiring
+- Path Diversity - mutliple shortest paths between source and destination
+  - fault tolerance
+
+*Types of NoC Topologies*
+
+*Crossbar* - directly connects n inputs to m outputs (no intermediate stages)
+  - fully connected, hop count $ = 1$
+  - routers often have internal crossbars
+
+*Bus*
+  - all producers/consumers share a common shared Channel
+
+*k-ary n-cube*
+  - $k^N$ network nodes
+  - N-dimensional grid with k nodes in each N-dimension
+
+  - *Torus* is a common interconnect topology
+    - edge symmetry is good for load balancing, we lose symmetry if we remove the wrap-around edge links
+
+There are also butterfly, clos networks, etc.
+  - add an intermediate stage of switches to avoid the non-scalability of crossbar
+  - Folded clos/fat tree features a constant bandwidth of each level of the tree
+
+There are also various routing algorithms through NoCs
+  - oblivious routing algorithms do not consider current network state
+  - adaptive routing algorithms exploits path diversity, and considers current network state
+
+== VLIW
+  - no register scoreboard, renaming, etc. Processors read whatever value is in register/bypass logic.
+  - compiler knows delays of instructions, handles all ILP (instead of the hardware)
+  - nops are inserted if the processor cannot find enough parallel instructions (can potentially take up a large amount of space in instruction memory)
+  - very simple pipelined logic, but places the burden on the compiler
+    - common in AI hardware, often tightly coupled with systolic arrays
+  - hard to maintain compiler compatibility between different versions of the processor
+
+== Power
+
+- $P_"dyn" = alpha n C V_"DD"^2 f$
+  - we can decrease $alpha$ through sleep mode, clock gating
+  - we can decrease $C$ through smaller transistors and shorter wires 
+  - we can decrease $V_"DD"$ to the lowest suitable voltage
+  - we can decrease $f$ to the lowest suitable frequency
+
+- Reducing static power can be done by:
+  - selecting lower $V_t$ devices
+  - keeping in mind thermal effects, body bias, etc. when doing physical design.
+
+- Power is incredibly important (just as perf.), we need to optimize for power at each design stage

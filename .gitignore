@@ -6,3 +6,6 @@
 *.fls
 *.out
 *.gz
+
+# macOS
+.DS_Store
